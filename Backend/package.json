@@ -6,9 +6,9 @@
     "devStart": "nodemon app.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Matthew Jonathan G",
   "license": "ISC",
-  "description": "",
+  "description": "This is an expressJS application which uses mongoDB, which helps to estimate the cost of the volume/mass of ingredients in a recipe. The recipe can be obtained on your behalf using an api call to an AI/GPT but you can also give your own recipe through the respective endpoints. Feel free to try hitting these endpoints using the postman collections I've attached.",
   "dependencies": {
     "axios": "^1.9.0",
     "axios-cookiejar-support": "^6.0.2",
@@ -16,8 +16,7 @@
     "backend": "file:",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "jsdom": "^26.1.0",
-    "mongoose": "^8.14.3",
+    "mongoose": "^8.15.0",
     "string-similarity": "^4.0.4",
     "tough-cookie": "^5.1.2"
   },

@@ -19,6 +19,5 @@ Commands I did for creating project:
 * npm i axios-retry
 * npm i string-similarity
 * npm i --save-dev nodemon
-* npm i jsdom
 
 Current Node version (can run on later versions too): v18.20.8 (npm 10.8.0)
