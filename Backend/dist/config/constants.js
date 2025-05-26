@@ -1,4 +1,7 @@
 "use strict";
+// Author: Matthew Jonathan G
+// This file is part of the Food Recipe Cost Estimator expressJS project.
+// (c) 2024 Matthew Jonathan G. All rights reserved.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DEFAULT_RECIPE_IMAGE_URL = exports.RECIPE_IMAGE_HOST_URL = exports.RECIPE_FETCH_IMAGE_URL = exports.STORE_SEARCH_ITEM_URL = exports.STORE_HOME_PAGE = exports.EXPECTED_UNIT_EXCEPTIONS = exports.AI_REQUEST_TEXT = exports.AI_URL = void 0;
 const AI_URL = "https://models.inference.ai.azure.com/chat/completions";
