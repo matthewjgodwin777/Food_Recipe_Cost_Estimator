@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "devStart": "nodemon app.js"
+    "devStart": "nodemon --watch . --ext ts --exec ts-node app.ts",
+    "build": "tsc && npm run copy-resources",
+    "copy-resources": "xcopy resources dist\\resources /E /I /Y"
   },
   "keywords": [],
   "author": "Matthew Jonathan G",
@@ -17,10 +19,22 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "mongoose": "^8.15.0",
-    "string-similarity": "^4.0.4",
-    "tough-cookie": "^5.1.2"
+    "string-similarity-js": "^2.1.4",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "tough-cookie": "^5.1.2",
+    "zod": "^3.25.7"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "@types/duckduckgo-images-api": "^1.0.3",
+    "@types/express": "^5.0.2",
+    "@types/mongodb": "^4.0.6",
+    "@types/node": "^22.15.18",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
+    "eslint": "^9.27.0",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
   }
 }

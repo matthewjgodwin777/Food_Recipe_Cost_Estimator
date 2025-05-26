@@ -7,7 +7,7 @@
 	},
 	"item": [
 		{
-			"name": "/ingredients-from-ai-with-costs",
+			"name": "(Sample) /ingredients-from-ai-with-costs",
 			"request": {
 				"auth": {
 					"type": "noauth"
@@ -16,7 +16,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"recipe_name\":\"Kadai Vegetable\",\r\n    \"recipe_qty\":\"500g\",\r\n    \"save_to_db\": true\r\n}",
+					"raw": "{\r\n    \"recipe_name\":\"Fudgy Brownie\",\r\n    \"recipe_qty\":\"500g\",\r\n    \"save_to_db\": false\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -36,74 +36,13 @@
 			},
 			"response": [
 				{
-					"name": "(Chicken Malai Tikka) /ingredients-from-ai-with-costs",
-					"originalRequest": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"recipe_name\":\"Chicken Malai Tikka\",\r\n    \"recipe_qty\":\"500g\",\r\n    \"save_to_db\": true\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:3000/ingredients-from-ai-with-costs",
-							"host": [
-								"localhost"
-							],
-							"port": "3000",
-							"path": [
-								"ingredients-from-ai-with-costs"
-							]
-						}
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "X-Powered-By",
-							"value": "Express"
-						},
-						{
-							"key": "Content-Type",
-							"value": "application/json; charset=utf-8"
-						},
-						{
-							"key": "Content-Length",
-							"value": "5032"
-						},
-						{
-							"key": "ETag",
-							"value": "W/\"13a8-nWmxMafcoduKo+9HOCJCINzQHJI\""
-						},
-						{
-							"key": "Date",
-							"value": "Thu, 15 May 2025 14:42:46 GMT"
-						},
-						{
-							"key": "Connection",
-							"value": "keep-alive"
-						},
-						{
-							"key": "Keep-Alive",
-							"value": "timeout=5"
-						}
-					],
-					"cookie": [],
-					"body": "{\n    \"message\": \"Ingredients fetched successfully!\",\n    \"items\": [\n        {\n            \"name\": \"Chicken Breast Boneless\",\n            \"desc\": \"(2-4 pcs)\",\n            \"count\": 1,\n            \"quantity\": \"500\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"233\",\n            \"selling_price\": \"179\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/10000900_10-fresho-chicken-breast-boneless-antibiotic-residue-free-4-5-pcs.jpg\",\n            \"actual_required_qty\": 400,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 186.4,\n            \"actual_cost\": 143.2,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Greek Yogurt\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"100\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"40\",\n            \"selling_price\": \"38\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40281258_2-milky-mist-greek-yogurt-natural-high-protein-no-added-sugar.jpg\",\n            \"actual_required_qty\": 100,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 40,\n            \"actual_cost\": 38,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Pure Ghee\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"2000\",\n            \"quantity_unit\": \"ml\",\n            \"mrp\": \"1300\",\n            \"selling_price\": \"1178\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1214144_1-nandini-pure-ghee.jpg\",\n            \"actual_required_qty\": 15,\n            \"actual_required_unit\": \"ml\",\n            \"total_cost_at_mrp\": 9.75,\n            \"actual_cost\": 8.834999999999999,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Ginger Garlic Paste\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"400\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"100\",\n            \"selling_price\": \"80\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1212695_1-catch-ginger-garlic-paste.jpg\",\n            \"actual_required_qty\": 10,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 2.5,\n            \"actual_cost\": 2,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Lemon Juice With Natural Lemons\",\n            \"desc\": \"(Multipack)\",\n            \"count\": 1,\n            \"quantity\": \"1000\",\n            \"quantity_unit\": \"ml\",\n            \"mrp\": \"320\",\n            \"selling_price\": \"256\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1223269_1-keya-lemon-juice-with-natural-lemons.jpg\",\n            \"actual_required_qty\": 10,\n            \"actual_required_unit\": \"ml\",\n            \"total_cost_at_mrp\": 3.2,\n            \"actual_cost\": 2.56,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Stuffed Green Olives - With Pimento Paste\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"450\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"230\",\n            \"selling_price\": \"230\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/256685_4-del-monte-stuffed-green-olives-with-pimento-paste.jpg\",\n            \"actual_required_qty\": 5,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 2.5555555555555554,\n            \"actual_cost\": 2.5555555555555554,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Masala - Garam\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"200\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"204\",\n            \"selling_price\": \"204\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40128824_4-everest-masala-garam.jpg\",\n            \"actual_required_qty\": 5,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 5.1,\n            \"actual_cost\": 5.1,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Vacuum Evaporated Iodised Edible Common Salt\",\n            \"desc\": \"Pouch\",\n            \"count\": 1,\n            \"quantity\": \"1000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"30\",\n            \"selling_price\": \"26\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/241600_9-tata-salt-iodized.jpg\",\n            \"actual_required_qty\": 5,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 0.15,\n            \"actual_cost\": 0.13,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Organic - Black Pepper/Kali Mirchi\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"400\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"778\",\n            \"selling_price\": \"562.32\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1205369_1-bb-royal-organic-black-pepperkali-mirchi.jpg\",\n            \"actual_required_qty\": 2,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 3.89,\n            \"actual_cost\": 2.8116000000000003,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Organic Kasuri Methi\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"200\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"149\",\n            \"selling_price\": \"114.48\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40203917_1-bb-royal-organic-kasoori-methi.jpg\",\n            \"actual_required_qty\": 2,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 1.49,\n            \"actual_cost\": 1.1448,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Fresh Cream\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"250\",\n            \"quantity_unit\": \"ml\",\n            \"mrp\": \"70\",\n            \"selling_price\": \"65.8\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40102603_3-amul-fresh-cream-25-milk-fat-low-fat.jpg\",\n            \"actual_required_qty\": 30,\n            \"actual_required_unit\": \"ml\",\n            \"total_cost_at_mrp\": 8.4,\n            \"actual_cost\": 7.896,\n            \"unit_conversion_issues\": false\n        }\n    ],\n    \"total_mrp\": 263.43555555555554,\n    \"total_cost\": 214.23295555555552,\n    \"cost_evaluation_failed_count\": 0,\n    \"instructions\": \"To prepare Chicken Malai Tikka, start by marinating the chicken. In a bowl, mix the yogurt, ginger garlic paste, lemon juice, green chili paste, garam masala, salt, black pepper, and kasuri methi. Add the chicken pieces to this marinade and ensure they are well-coated. Refrigerate for at least 2 hours, or overnight for better flavor.\\n\\nPreheat your grill or oven to a high temperature. Thread the marinated chicken onto skewers. Brush some ghee over the chicken pieces for added flavor and moisture. Grill the chicken for about 10-15 minutes, turning occasionally until they are cooked through and have nice char marks.\\n\\nOnce done, remove from the grill and drizzle some fresh cream on top before serving. Enjoy your Chicken Malai Tikka with mint chutney and onion slices!\"\n}"
-				},
-				{
 					"name": "(Goat Biriyani) /ingredients-from-ai-with-costs",
 					"originalRequest": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"recipe_name\":\"Goat Biriyani\",\r\n    \"recipe_qty\":\"500g\",\r\n    \"save_to_db\": true\r\n}",
+							"raw": "{\r\n    \"recipe_name\":\"Goat Biriyani\",\r\n    \"recipe_qty\":\"500g\",\r\n    \"save_to_db\": false\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -135,15 +74,15 @@
 						},
 						{
 							"key": "Content-Length",
-							"value": "5598"
+							"value": "6510"
 						},
 						{
 							"key": "ETag",
-							"value": "W/\"15de-AHuGSiomIHdydKWSnre9tOM1B3o\""
+							"value": "W/\"196e-eeZldciVKeap1yDGu8us2nLWruk\""
 						},
 						{
 							"key": "Date",
-							"value": "Thu, 15 May 2025 14:43:47 GMT"
+							"value": "Sun, 25 May 2025 10:42:47 GMT"
 						},
 						{
 							"key": "Connection",
@@ -155,16 +94,16 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"message\": \"Ingredients fetched successfully!\",\n    \"items\": [\n        {\n            \"name\": \"Basmati Rice - Rozana Premium\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"10000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"1150\",\n            \"selling_price\": \"810\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1211909_2-bb-royal-basmati-rice-rozana-premium.jpg\",\n            \"actual_required_qty\": 300,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 34.5,\n            \"actual_cost\": 24.3,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Goat Meat Mince\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"250\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"400\",\n            \"selling_price\": \"400\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40329474_2-fresho-mutton-mince.jpg\",\n            \"actual_required_qty\": 200,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 320,\n            \"actual_cost\": 320,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Pure Ghee\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"2000\",\n            \"quantity_unit\": \"ml\",\n            \"mrp\": \"1300\",\n            \"selling_price\": \"1178\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1214144_1-nandini-pure-ghee.jpg\",\n            \"actual_required_qty\": 50,\n            \"actual_required_unit\": \"ml\",\n            \"total_cost_at_mrp\": 32.5,\n            \"actual_cost\": 29.45,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Onion\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"5000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"175\",\n            \"selling_price\": \"104.5\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1201414_3-fresho-onion.jpg\",\n            \"actual_required_qty\": 100,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 3.5000000000000004,\n            \"actual_cost\": 2.09,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Tomato - Local\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"2000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"72\",\n            \"selling_price\": \"38\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1228332_2-fresho-tomato-local.jpg\",\n            \"actual_required_qty\": 50,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 1.7999999999999998,\n            \"actual_cost\": 0.95,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Ginger Garlic Paste\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"400\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"100\",\n            \"selling_price\": \"80\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1212695_1-catch-ginger-garlic-paste.jpg\",\n            \"actual_required_qty\": 25,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 6.25,\n            \"actual_cost\": 5,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Greek Yogurt\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"100\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"40\",\n            \"selling_price\": \"38\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40281258_2-milky-mist-greek-yogurt-natural-high-protein-no-added-sugar.jpg\",\n            \"actual_required_qty\": 50,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 20,\n            \"actual_cost\": 19,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Masala - Shahi Biryani\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"200\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"332\",\n            \"selling_price\": \"298.8\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40128830_2-everest-masala-shahi-biryani.jpg\",\n            \"actual_required_qty\": 10,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 16.599999999999998,\n            \"actual_cost\": 14.94,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Mint Leaves - Cleaned, without roots\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"50\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"11.68\",\n            \"selling_price\": \"7.5\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/30007408_6-fresho-mint-leaves-cleaned-without-roots.jpg\",\n            \"actual_required_qty\": 20,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 4.672,\n            \"actual_cost\": 3,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Coriander Leaves\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"1000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"173\",\n            \"selling_price\": \"138.4\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/10000326_16-fresho-coriander-leaves.jpg\",\n            \"actual_required_qty\": 20,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 3.46,\n            \"actual_cost\": 2.768,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Chilli - Green Long, Medium (Loose)\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"1000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"139\",\n            \"selling_price\": \"40\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/10000333_15-fresho-chilli-green-long-medium.jpg\",\n            \"actual_required_qty\": 10,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 1.3900000000000001,\n            \"actual_cost\": 0.4,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Vacuum Evaporated Iodised Edible Common Salt\",\n            \"desc\": \"Pouch\",\n            \"count\": 1,\n            \"quantity\": \"1000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"30\",\n            \"selling_price\": \"26\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/241600_9-tata-salt-iodized.jpg\",\n            \"actual_required_qty\": 10,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 0.3,\n            \"actual_cost\": 0.26,\n            \"unit_conversion_issues\": false\n        }\n    ],\n    \"total_mrp\": 444.97200000000004,\n    \"total_cost\": 422.1579999999999,\n    \"cost_evaluation_failed_count\": 0,\n    \"instructions\": \"To prepare the Goat Biryani, follow these steps:\\n\\n1. **Marinate the Goat**: In a bowl, combine the goat meat with yogurt, ginger-garlic paste, biryani masala, and a pinch of salt. Allow it to marinate for at least 30 minutes.\\n\\n2. **Sauté Onions**: Heat ghee in a heavy-bottomed pot. Add sliced onions and sauté until golden brown. Remove half for garnishing.\\n\\n3. **Cook Tomatoes**: In the same pot, add chopped tomatoes and cook until soft. Add the marinated goat meat and sauté until it changes color.\\n\\n4. **Add Rice**: Boil water in a separate pot, add salt, and cook the basmati rice until it is 70% done. Drain and set aside.\\n\\n5. **Layer the Biryani**: In the pot with goat and tomato mixture, layer the partially cooked rice over it. Add chopped mint and coriander leaves, green chilies, and the reserved fried onions on top.\\n\\n6. **Dum Cooking**: Cover the pot with a tight lid and cook on low heat for about 25-30 minutes to allow the flavors to meld.\\n\\n7. **Serve**: Fluff the biryani gently before serving. Garnish with more mint and coriander if desired. Enjoy your Goat Biryani!\"\n}"
+					"body": "{\n    \"message\": \"Ingredients' fetched and costs were evaluated successfully!\",\n    \"recipe_name\": \"Goat Biriyani\",\n    \"recipe_qty\": \"500g\",\n    \"recipe_image_url\": \"https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_208,h_208,c_fit/FOOD_CATALOG/IMAGES/CMS/2025/2/19/8ebabb98-cb04-4605-bcc3-a69129828654_0c111376-385d-49f3-afa9-d78b8d0774f6.jpg\",\n    \"items\": [\n        {\n            \"name\": \"Basmati Rice - Rozana Premium\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"10000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"1150\",\n            \"selling_price\": \"836\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1211909_2-bb-royal-basmati-rice-rozana-premium.jpg\",\n            \"actual_required_qty\": 250,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 28.75,\n            \"actual_cost\": 20.9,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Pure Ghee\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"2000\",\n            \"quantity_unit\": \"ml\",\n            \"mrp\": \"1300\",\n            \"selling_price\": \"1178\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1214144_1-nandini-pure-ghee.jpg\",\n            \"actual_required_qty\": 30,\n            \"actual_required_unit\": \"ml\",\n            \"total_cost_at_mrp\": 19.5,\n            \"actual_cost\": 17.669999999999998,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Goat Meat Mince\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"250\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"400\",\n            \"selling_price\": \"310\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40329474_2-fresho-mutton-mince.jpg\",\n            \"actual_required_qty\": 200,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 320,\n            \"actual_cost\": 248,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Onion - Organically Grown (Loose)\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"500\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"27\",\n            \"selling_price\": \"17\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/50000535_6-fresho-onion-organically-grown.jpg\",\n            \"actual_required_qty\": 100,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 5.4,\n            \"actual_cost\": 3.4000000000000004,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Tomato - Local\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"2000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"70\",\n            \"selling_price\": \"36\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1228332_2-fresho-tomato-local.jpg\",\n            \"actual_required_qty\": 100,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 3.5000000000000004,\n            \"actual_cost\": 1.7999999999999998,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Greek Yogurt\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"100\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"40\",\n            \"selling_price\": \"38\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40281258_2-milky-mist-greek-yogurt-natural-high-protein-no-added-sugar.jpg\",\n            \"actual_required_qty\": 50,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 20,\n            \"actual_cost\": 19,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Ginger Garlic Paste\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"400\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"100\",\n            \"selling_price\": \"80\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1212695_1-catch-ginger-garlic-paste.jpg\",\n            \"actual_required_qty\": 20,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 5,\n            \"actual_cost\": 4,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Masala - Shahi Biryani\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"200\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"332\",\n            \"selling_price\": \"298.8\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40128830_2-everest-masala-shahi-biryani.jpg\",\n            \"actual_required_qty\": 15,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 24.9,\n            \"actual_cost\": 22.41,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Coriander Leaves\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"1000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"191\",\n            \"selling_price\": \"152.8\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/10000326_16-fresho-coriander-leaves.jpg\",\n            \"actual_required_qty\": 10,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 1.9100000000000001,\n            \"actual_cost\": 1.5280000000000002,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Dream White Toothpaste - Fresh Mint, Advanced Formula\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"150\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"299\",\n            \"selling_price\": \"278.07\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40295432_2-perfora-dream-white-toothpaste-fresh-mint-advanced-formula.jpg\",\n            \"actual_required_qty\": 10,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 19.933333333333334,\n            \"actual_cost\": 18.538,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Vacuum Evaporated Iodised Edible Common Salt\",\n            \"desc\": \"Pouch\",\n            \"count\": 1,\n            \"quantity\": \"1000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"28\",\n            \"selling_price\": \"27\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/241600_9-tata-salt-iodized.jpg\",\n            \"actual_required_qty\": 5,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 0.14,\n            \"actual_cost\": 0.135,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Chilli - Green Long, Medium (Loose)\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"1000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"133\",\n            \"selling_price\": \"39\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/10000333_15-fresho-chilli-green-long-medium.jpg\",\n            \"actual_required_qty\": 5,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 0.665,\n            \"actual_cost\": 0.195,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Lemon Juice With Natural Lemons\",\n            \"desc\": \"(Multipack)\",\n            \"count\": 1,\n            \"quantity\": \"1000\",\n            \"quantity_unit\": \"ml\",\n            \"mrp\": \"320\",\n            \"selling_price\": \"272\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1223269_1-keya-lemon-juice-with-natural-lemons.jpg\",\n            \"actual_required_qty\": 10,\n            \"actual_required_unit\": \"ml\",\n            \"total_cost_at_mrp\": 3.2,\n            \"actual_cost\": 2.72,\n            \"unit_conversion_issues\": false\n        }\n    ],\n    \"total_mrp\": 452.8983333333333,\n    \"total_cost\": 360.29600000000005,\n    \"cost_evaluation_failed_count\": 0,\n    \"instructions\": \"To make the Goat Biryani, follow these steps:\\n\\n1. Rinse the basmati rice under cold water until the water runs clear. Soak the rice in water for about 30 minutes and then drain.\\n2. Heat ghee in a large pot over medium heat. Add finely sliced onions and sauté until they are golden brown.\\n3. Add the ginger garlic paste and sauté for a minute until fragrant.\\n4. Add the goat meat to the pot and cook until it is browned on all sides.\\n5. Stir in the chopped tomatoes and cook until they soften.\\n6. Add yogurt, biryani masala, chopped green chilies, and salt. Mix well and let it cook for about 10 minutes until the meat is tender.\\n7. Meanwhile, in a separate pot, bring water to a boil and cook the soaked rice until it is 70% done. Drain the rice.\\n8. Layer the partially cooked rice over the meat mixture in the pot. Garnish with chopped fresh coriander and mint.\\n9. Drizzle lemon juice over the top.\\n10. Cover the pot with a tight lid and let it cook on low heat for about 20-25 minutes or until the rice is fully cooked and has absorbed the flavors.\\n11. Once done, gently fluff the biryani with a fork and serve hot. \\n\\nEnjoy your delicious Goat Biryani!\",\n    \"ai_generated_recipe\": true,\n    \"is_modified\": false\n}"
 				},
 				{
-					"name": "(Kadai Vegetable) /ingredients-from-ai-with-costs",
+					"name": "(Fudgy Brownie) /ingredients-from-ai-with-costs",
 					"originalRequest": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"recipe_name\":\"Kadai Vegetable\",\r\n    \"recipe_qty\":\"500g\",\r\n    \"save_to_db\": true\r\n}",
+							"raw": "{\r\n    \"recipe_name\":\"Fudgy Brownie\",\r\n    \"recipe_qty\":\"500g\",\r\n    \"save_to_db\": false\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -182,8 +121,8 @@
 							]
 						}
 					},
-					"status": "Created",
-					"code": 201,
+					"status": "OK",
+					"code": 200,
 					"_postman_previewlanguage": "json",
 					"header": [
 						{
@@ -196,15 +135,15 @@
 						},
 						{
 							"key": "Content-Length",
-							"value": "5335"
+							"value": "4796"
 						},
 						{
 							"key": "ETag",
-							"value": "W/\"14d7-PVT8VxgUnzrhbnnxJHVhakUhQOA\""
+							"value": "W/\"12bc-MbYOL4GJ0pvZLZR7UPzh4IaUX4I\""
 						},
 						{
 							"key": "Date",
-							"value": "Sun, 18 May 2025 11:45:22 GMT"
+							"value": "Sun, 25 May 2025 11:04:24 GMT"
 						},
 						{
 							"key": "Connection",
@@ -216,7 +155,68 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"message\": \"Ingredients' fetched and costs were evaluated successfully! Recipe was successfully saved in DB!\",\n    \"recipe_name\": \"Kadai Vegetable\",\n    \"recipe_qty\": \"500g\",\n    \"items\": [\n        {\n            \"name\": \"5 Mix Vegetable\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"1000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"160\",\n            \"selling_price\": \"133\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1229978_1-precia-5-mix-vegetable.jpg\",\n            \"actual_required_qty\": 300,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 48,\n            \"actual_cost\": 39.900000000000006,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"VitAE Refined Sunflower Oil\",\n            \"desc\": \"(Multipack)\",\n            \"count\": 1,\n            \"quantity\": \"3000\",\n            \"quantity_unit\": \"ml\",\n            \"mrp\": \"585\",\n            \"selling_price\": \"462\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1204463_2-dhara-refined-sunflower-oil.jpg\",\n            \"actual_required_qty\": 30,\n            \"actual_required_unit\": \"ml\",\n            \"total_cost_at_mrp\": 5.8500000000000005,\n            \"actual_cost\": 4.62,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Ginger Garlic Paste\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"400\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"100\",\n            \"selling_price\": \"80\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1212695_1-catch-ginger-garlic-paste.jpg\",\n            \"actual_required_qty\": 20,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 5,\n            \"actual_cost\": 4,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Onion\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"5000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"175\",\n            \"selling_price\": \"104.5\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1201414_3-fresho-onion.jpg\",\n            \"actual_required_qty\": 50,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 1.7500000000000002,\n            \"actual_cost\": 1.045,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Tomato - Local\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"2000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"72\",\n            \"selling_price\": \"38\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1228332_2-fresho-tomato-local.jpg\",\n            \"actual_required_qty\": 50,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 1.7999999999999998,\n            \"actual_cost\": 0.95,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Capsicum - Green (Loose)\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"1000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"95\",\n            \"selling_price\": \"40\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/10000067_26-fresho-capsicum-green.jpg\",\n            \"actual_required_qty\": 30,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 2.85,\n            \"actual_cost\": 1.2,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Chilli - Green Long, Medium (Loose)\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"1000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"153\",\n            \"selling_price\": \"40\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/10000333_15-fresho-chilli-green-long-medium.jpg\",\n            \"actual_required_qty\": 10,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 1.53,\n            \"actual_cost\": 0.4,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Cumin Seeds/Jeera\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"100\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"65\",\n            \"selling_price\": \"53.95\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40324011_1-popular-essentials-cumin-seedsjeera.jpg\",\n            \"actual_required_qty\": 5,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 3.25,\n            \"actual_cost\": 2.6975,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Turmeric Powder\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"250\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"95\",\n            \"selling_price\": \"85\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40296364_1-mtr-mtr-turmeric-powder-250g-pouch.jpg\",\n            \"actual_required_qty\": 5,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 1.9,\n            \"actual_cost\": 1.7000000000000002,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Chilli/Lal Mirchi Powder With Natural Oils\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"500\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"315\",\n            \"selling_price\": \"249.93\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40095121_11-tata-sampann-chilli-powder.jpg\",\n            \"actual_required_qty\": 5,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 3.15,\n            \"actual_cost\": 2.4993000000000003,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Masala - Garam\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"200\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"204\",\n            \"selling_price\": \"204\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40128824_4-everest-masala-garam.jpg\",\n            \"actual_required_qty\": 5,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 5.1,\n            \"actual_cost\": 5.1,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Vacuum Evaporated Iodised Edible Common Salt\",\n            \"desc\": \"Pouch\",\n            \"count\": 1,\n            \"quantity\": \"1000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"30\",\n            \"selling_price\": \"27\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/241600_9-tata-salt-iodized.jpg\",\n            \"actual_required_qty\": 5,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 0.15,\n            \"actual_cost\": 0.135,\n            \"unit_conversion_issues\": false\n        }\n    ],\n    \"total_mrp\": 80.33000000000001,\n    \"total_cost\": 64.24680000000001,\n    \"cost_evaluation_failed_count\": 0,\n    \"instructions\": \"To prepare the Kadai Vegetable, start by heating the oil in a kadai or pan on medium heat. Add the cumin seeds and let them splutter. Then, add the ginger-garlic paste and sauté for a minute until fragrant. Follow with chopped onions, and cook until they turn translucent. \\n\\nNext, add diced tomatoes and cook until softened, then mix in the turmeric powder, red chili powder, and salt. Add the mixed vegetables and bell pepper, and stir well to coat. Cover and cook for a few minutes until the vegetables are tender. Finally, sprinkle the garam masala and green chilies, mixing everything gently. Cook for an additional 2 minutes, then serve hot with naan or rice. Enjoy your meal!\",\n    \"ai_generated_recipe\": true,\n    \"is_modified\": false\n}"
+					"body": "{\n    \"message\": \"Ingredients' fetched and costs were evaluated successfully!\",\n    \"recipe_name\": \"Fudgy Brownie\",\n    \"recipe_qty\": \"500g\",\n    \"recipe_image_url\": \"https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_208,h_208,c_fit/FOOD_CATALOG/IMAGES/CMS/2024/8/8/3dd9730c-56e4-4009-a2b4-659826174be4_108e8ae2-a897-4ea7-84d6-07cce27ef3e3.jpg\",\n    \"items\": [\n        {\n            \"name\": \"Organic Refined Wheat Flour(Maida)\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"500\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"40\",\n            \"selling_price\": \"34.19\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40072475_8-bb-royal-organic-maida.jpg\",\n            \"actual_required_qty\": 200,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 16,\n            \"actual_cost\": 13.675999999999998,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Dark Cocoa Powder - Unsweetened\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"100\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"199\",\n            \"selling_price\": \"149.25\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40217472_4-christopher-cocoa-dark-cocoa-powder-unsweetened.jpg\",\n            \"actual_required_qty\": 50,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 99.5,\n            \"actual_cost\": 74.625,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Organic - Brown Sugar/Sakkare\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"2000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"229\",\n            \"selling_price\": \"175.51\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40091135_14-bb-royal-organic-brown-sugar.jpg\",\n            \"actual_required_qty\": 150,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 17.175,\n            \"actual_cost\": 13.16325,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Bura/Powder Sugar/Sakkare\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"500\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"50\",\n            \"selling_price\": \"39\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/30008043_5-bb-royal-burapowder-sugar.jpg\",\n            \"actual_required_qty\": 50,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 5,\n            \"actual_cost\": 3.9,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Butter - Pasteurized\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"1000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"460\",\n            \"selling_price\": \"460\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1202759_3-amul-butter-pasteurized.jpg\",\n            \"actual_required_qty\": 100,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 46,\n            \"actual_cost\": 46,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Eggs\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"6\",\n            \"quantity_unit\": \"pc\",\n            \"mrp\": \"88\",\n            \"selling_price\": \"88\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40106728_6-ayur-plus-eggs.jpg\",\n            \"actual_required_qty\": 2,\n            \"actual_required_unit\": \"pc\",\n            \"total_cost_at_mrp\": 29.333333333333332,\n            \"actual_cost\": 29.333333333333332,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"100 % Natural Bourbon Vanilla Extract - For Chefs & Home Use, Baking & Desserts\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"100\",\n            \"quantity_unit\": \"ml\",\n            \"mrp\": \"1019\",\n            \"selling_price\": \"1019\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40095601_3-sprig-100-natural-bourbon-vanilla-extract-for-chefs-home-use-baking-desserts.jpg\",\n            \"actual_required_qty\": 5,\n            \"actual_required_unit\": \"ml\",\n            \"total_cost_at_mrp\": 50.949999999999996,\n            \"actual_cost\": 50.949999999999996,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Baking Powder - Double Action Baking Powder, For Light & Fluffy Cakes, Pastries, Naans, Dhoklas, Cookies\",\n            \"desc\": \"Jar\",\n            \"count\": 1,\n            \"quantity\": \"400\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"85\",\n            \"selling_price\": \"83\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40053875_4-weikfield-baking-powder.jpg\",\n            \"actual_required_qty\": 5,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 1.0625,\n            \"actual_cost\": 1.0374999999999999,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Vacuum Evaporated Iodised Edible Common Salt\",\n            \"desc\": \"Pouch\",\n            \"count\": 1,\n            \"quantity\": \"1000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"28\",\n            \"selling_price\": \"27\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/241600_9-tata-salt-iodized.jpg\",\n            \"actual_required_qty\": 1,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 0.028,\n            \"actual_cost\": 0.027,\n            \"unit_conversion_issues\": false\n        }\n    ],\n    \"total_mrp\": 265.0488333333334,\n    \"total_cost\": 232.71208333333334,\n    \"cost_evaluation_failed_count\": 0,\n    \"instructions\": \"To make Fudgy Brownies, follow these steps:\\n\\n1. Preheat your oven to 180°C (350°F) and line a baking dish with parchment paper.\\n2. In a bowl, melt the butter and mix in the brown sugar until combined.\\n3. Add the eggs, one at a time, mixing well after each addition. Then stir in the vanilla extract.\\n4. In another bowl, whisk together the all-purpose flour, cocoa powder, powdered sugar, baking powder, and salt.\\n5. Gradually fold the dry ingredients into the wet mixture until just combined; do not overmix.\\n6. Pour the batter into the prepared baking dish and spread it evenly.\\n7. Bake for about 20-25 minutes, or until a toothpick inserted into the center comes out with a few moist crumbs.\\n8. Allow the brownies to cool in the pan before slicing and serving. Enjoy your fudgy brownies!\",\n    \"ai_generated_recipe\": true,\n    \"is_modified\": false\n}"
+				},
+				{
+					"name": "(Mac and Cheese) /ingredients-from-ai-with-costs",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"recipe_name\":\"Mac and Cheese\",\r\n    \"recipe_qty\":\"500g\",\r\n    \"save_to_db\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:3000/ingredients-from-ai-with-costs",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"ingredients-from-ai-with-costs"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "4796"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"12bc-MbYOL4GJ0pvZLZR7UPzh4IaUX4I\""
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 25 May 2025 11:04:24 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Ingredients' fetched and costs were evaluated successfully! Recipe was successfully saved in DB!\",\n    \"recipe_name\": \"Mac and Cheese\",\n    \"recipe_qty\": \"500g\",\n    \"recipe_image_url\": \"https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_208,h_208,c_fit/FOOD_CATALOG/IMAGES/CMS/2025/4/15/9b735d41-25d1-4e93-b82a-a83b4a42e409_097abf5e-7562-4940-9d9e-bb5e6a95abbc.jpg\",\n    \"items\": [\n        {\n            \"name\": \"Pasta Macaroni - Elbow, 100% Durum Wheat Semolina\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": 850,\n            \"quantity_unit\": \"g\",\n            \"mrp\": 112,\n            \"selling_price\": 103,\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40186047_2-bambino-macaroni-elbow-pasta.jpg\",\n            \"actual_required_qty\": 200,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 26.35294117647059,\n            \"actual_cost\": 24.235294117647058,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Cheddar Cheese - Block\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": 200,\n            \"quantity_unit\": \"g\",\n            \"mrp\": 220,\n            \"selling_price\": 198.99,\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40109573_7-dlecta-cheese-natural-cheddar.jpg\",\n            \"actual_required_qty\": 150,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 165,\n            \"actual_cost\": 149.2425,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Pasteurised Toned Milk\",\n            \"desc\": \"Pouch\",\n            \"count\": 1,\n            \"quantity\": 1000,\n            \"quantity_unit\": \"ml\",\n            \"mrp\": 37,\n            \"selling_price\": 37,\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40158264_1-nandini-pasteurised-toned-milk.jpg\",\n            \"actual_required_qty\": 200,\n            \"actual_required_unit\": \"ml\",\n            \"total_cost_at_mrp\": 7.3999999999999995,\n            \"actual_cost\": 7.3999999999999995,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Pasteurised Butter\",\n            \"desc\": \"Carton\",\n            \"count\": 1,\n            \"quantity\": 500,\n            \"quantity_unit\": \"g\",\n            \"mrp\": 230,\n            \"selling_price\": 230,\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/104864_8-amul-butter-pasteurised.jpg\",\n            \"actual_required_qty\": 30,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 13.8,\n            \"actual_cost\": 13.8,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Select MP Sharbati Atta\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": 10000,\n            \"quantity_unit\": \"g\",\n            \"mrp\": 660,\n            \"selling_price\": 594,\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40236231_5-aashirvaad-select-sharbati-atta-100-mp-whole-wheat-rotis-stay-softer-for-longer.jpg\",\n            \"actual_required_qty\": 20,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 1.32,\n            \"actual_cost\": 1.188,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Vacuum Evaporated Iodised Edible Common Salt\",\n            \"desc\": \"Pouch\",\n            \"count\": 1,\n            \"quantity\": 1000,\n            \"quantity_unit\": \"g\",\n            \"mrp\": 28,\n            \"selling_price\": 27,\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/241600_9-tata-salt-iodized.jpg\",\n            \"actual_required_qty\": 1,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 0.028,\n            \"actual_cost\": 0.027,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Organic Black Pepper/Kari Menasui\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": 200,\n            \"quantity_unit\": \"g\",\n            \"mrp\": 389,\n            \"selling_price\": 282.18,\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40109372_11-bb-royal-organic-black-pepperkali-mirchi.jpg\",\n            \"actual_required_qty\": 1,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 1.945,\n            \"actual_cost\": 1.4109,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Mustard/Sasive Powder\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": 100,\n            \"quantity_unit\": \"g\",\n            \"mrp\": 30,\n            \"selling_price\": 30,\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40178494_4-jk-mustard-powder.jpg\",\n            \"actual_required_qty\": 5,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 1.5,\n            \"actual_cost\": 1.5,\n            \"unit_conversion_issues\": false\n        }\n    ],\n    \"total_mrp\": 217.34594117647057,\n    \"total_cost\": 198.80369411764707,\n    \"cost_evaluation_failed_count\": 0,\n    \"instructions\": \"To make 500g of Mac and Cheese, follow these steps:\\n\\n1. **Cook the Macaroni**: In a large pot of salted boiling water, cook the macaroni according to the package instructions until al dente. Drain and set aside.\\n  \\n2. **Make the Cheese Sauce**: In a pan, melt the butter over medium heat. Add the flour, whisking constantly for about 1 minute until it forms a roux. Gradually add the milk, whisking until the mixture thickens.\\n\\n3. **Add Cheese**: Lower the heat and add the grated cheddar cheese, stirring until it melts and the sauce is smooth. Season with salt, pepper, and mustard powder.\\n\\n4. **Combine**: Add the cooked macaroni to the cheese sauce and mix until well combined.\\n\\n5. **Serve**: Remove from heat and serve hot. Optionally, you can top with extra cheese and bake for a crispy topping.\\n\\nEnjoy your Mac and Cheese!\",\n    \"ai_generated_recipe\": true,\n    \"is_modified\": false\n}"
 				}
 			]
 		},
@@ -230,7 +230,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"recipe_name\":\"Goat Biriyani\",\r\n    \"recipe_qty\":\"500g\",\r\n    \"ingredientNames\":[\r\n    \"Goat\",         \"Basmati Rice\",\r\n    \"Onion\",        \"Ginger\",\r\n    \"Garlic\",       \"Tomato\",\r\n    \"Green Chilli\", \"Yogurt\",\r\n    \"Coriander\",    \"Mint\",\r\n    \"Ghee\",         \"Garam Masala\",\r\n    \"Bay Leaf\",     \"Cinnamon\",\r\n    \"Cloves\",       \"Cardamom\",\r\n    \"Salt\",         \"Water\"\r\n    ],\r\n    \"ingredientQtys\":[\r\n    \"500\", \"250\", \"150\", \"30\",\r\n    \"20\",  \"100\", \"10\",  \"100\",\r\n    \"20\",  \"20\",  \"50\",  \"5\",\r\n    \"2\",   \"2\",   \"3\",   \"5\",\r\n    \"750\"\r\n    ],\r\n    \"ingredientUnits\": [\r\n    \"g\", \"g\",  \"g\", \"g\", \"g\",\r\n    \"g\", \"g\",  \"g\", \"g\", \"g\",\r\n    \"g\", \"g\",  \"g\", \"g\", \"g\",\r\n    \"g\", \"ml\"\r\n  ]\r\n}",
+					"raw": "{\r\n    \"recipe_name\":\"Goat Biriyani\",\r\n    \"recipe_qty\":\"500g\",\r\n    \"save_to_db\":false,\r\n    \"ingredientNames\":[\r\n    \"All-Purpose Flour\",\r\n    \"Granulated Sugar\",\r\n    \"Unsweetened Cocoa Powder\",\r\n    \"Butter\",\r\n    \"Eggs\",\r\n    \"Vanilla Extract\",\r\n    \"Baking Powder\",\r\n    \"Salt\",\r\n    \"Chocolate Chips\"\r\n    ],\r\n    \"ingredientQtys\": [\r\n    150, 200, 50, 100, 1,\r\n        5,   5,  1, 100\r\n    ],\r\n    \"ingredientUnits\": [\r\n    \"g\", \"g\", \"g\",\r\n    \"g\", \"pc\", \"ml\",\r\n    \"g\", \"g\", \"g\"\r\n    ]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -250,13 +250,13 @@
 			},
 			"response": [
 				{
-					"name": "(Badam Halwa) /cost-of-ingredients",
+					"name": "(Sample) /cost-of-ingredients",
 					"originalRequest": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"recipe_name\":\"Badam Halwa\",\r\n    \"recipe_qty\":\"270.4g\",\r\n    \"save_to_db\":true,\r\n    \"ingredientNames\":[\r\n    \"Almonds\", \"Sugar\", \"Ghee\", \"Saffron\"\r\n    ],\r\n    \"ingredientQtys\":[\r\n    100, 100, 76.67, 0.4\r\n    ],\r\n    \"ingredientUnits\": [\r\n    \"g\", \"g\",  \"ml\", \"g\"\r\n  ]\r\n}",
+							"raw": "{\r\n    \"recipe_name\":\"Brownie\",\r\n    \"recipe_qty\":\"500g\",\r\n    \"save_to_db\":false,\r\n    \"instructions\":\"\",\r\n    \"ingredientNames\":[\r\n    \"All-Purpose Flour\",\r\n    \"Powdered Sugar\",\r\n    \"Unsweetened Cocoa Powder\",\r\n    \"Butter\",\r\n    \"Eggs\",\r\n    \"Vanilla Extract\",\r\n    \"Baking Powder\",\r\n    \"Salt\",\r\n    \"Chocolate Chips\"\r\n    ],\r\n    \"ingredientQtys\": [\r\n    150, 200, 50, 100, 1,\r\n        5,   5,  1, 100\r\n    ],\r\n    \"ingredientUnits\": [\r\n    \"g\", \"g\", \"g\",\r\n    \"g\", \"pc\", \"ml\",\r\n    \"g\", \"g\", \"g\"\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -274,8 +274,8 @@
 							]
 						}
 					},
-					"status": "Created",
-					"code": 201,
+					"status": "OK",
+					"code": 200,
 					"_postman_previewlanguage": "json",
 					"header": [
 						{
@@ -288,15 +288,15 @@
 						},
 						{
 							"key": "Content-Length",
-							"value": "1737"
+							"value": "3930"
 						},
 						{
 							"key": "ETag",
-							"value": "W/\"6c9-CKIDuNMhmIl7K5DAtLsPjflMuK0\""
+							"value": "W/\"f5a-UcZL89M5aCnsW2d21vphvu0rxW8\""
 						},
 						{
 							"key": "Date",
-							"value": "Sun, 18 May 2025 15:45:29 GMT"
+							"value": "Sun, 25 May 2025 10:37:38 GMT"
 						},
 						{
 							"key": "Connection",
@@ -308,7 +308,7 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"message\": \"Ingredients' cost evaluation is done successfully! Recipe was successfully saved in DB!\",\n    \"recipe_name\": \"Badam Halwa\",\n    \"recipe_qty\": \"270.4g\",\n    \"items\": [\n        {\n            \"name\": \"Californian Almond - Giri\",\n            \"desc\": \"Pouch\",\n            \"count\": 1,\n            \"quantity\": \"1000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"1500\",\n            \"selling_price\": \"927\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40021405_12-bb-popular-almondbadam-californian-giri.jpg\",\n            \"actual_required_qty\": 100,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 150,\n            \"actual_cost\": 92.7,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"White Label Sugar\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"5000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"300\",\n            \"selling_price\": \"256.5\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40214887_2-parrys-white-label-sugar.jpg\",\n            \"actual_required_qty\": 100,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 6,\n            \"actual_cost\": 5.13,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Pure Ghee\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"2000\",\n            \"quantity_unit\": \"ml\",\n            \"mrp\": \"1300\",\n            \"selling_price\": \"1178\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1214144_1-nandini-pure-ghee.jpg\",\n            \"actual_required_qty\": 76.67,\n            \"actual_required_unit\": \"ml\",\n            \"total_cost_at_mrp\": 49.8355,\n            \"actual_cost\": 45.158629999999995,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Saffron/Kesar\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"1\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"400\",\n            \"selling_price\": \"309\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40196671_3-bb-royal-saffronkesar.jpg\",\n            \"actual_required_qty\": 0.4,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 160,\n            \"actual_cost\": 123.60000000000001,\n            \"unit_conversion_issues\": false\n        }\n    ],\n    \"total_mrp\": 365.8355,\n    \"total_cost\": 266.58863,\n    \"cost_evaluation_failed_count\": 0,\n    \"instructions\": null,\n    \"ai_generated_recipe\": false,\n    \"is_modified\": false\n}"
+					"body": "{\n    \"message\": \"Ingredients' cost evaluation is done successfully!\",\n    \"recipe_name\": \"Brownie\",\n    \"recipe_qty\": \"500g\",\n    \"recipe_image_url\": \"https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_208,h_208,c_fit/FOOD_CATALOG/IMAGES/CMS/2024/10/15/8c2ad5f1-afb4-492e-aa4b-8472d462cd73_31c5f5dc-a7ac-427d-bd71-8112790b3705.jpg\",\n    \"items\": [\n        {\n            \"name\": \"Organic Refined Wheat Flour(Maida)\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"500\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"40\",\n            \"selling_price\": \"34.19\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40072475_8-bb-royal-organic-maida.jpg\",\n            \"actual_required_qty\": 150,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 12,\n            \"actual_cost\": 10.257,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Bura/Powder Sugar/Sakkare\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"500\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"50\",\n            \"selling_price\": \"39\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/30008043_5-bb-royal-burapowder-sugar.jpg\",\n            \"actual_required_qty\": 200,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 20,\n            \"actual_cost\": 15.6,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Dark Cocoa Powder - Unsweetened\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"100\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"199\",\n            \"selling_price\": \"149.25\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40217472_4-christopher-cocoa-dark-cocoa-powder-unsweetened.jpg\",\n            \"actual_required_qty\": 50,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 99.5,\n            \"actual_cost\": 74.625,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Butter - Pasteurized\",\n            \"desc\": \"Multipack\",\n            \"count\": 1,\n            \"quantity\": \"1000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"460\",\n            \"selling_price\": \"460\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/1202759_3-amul-butter-pasteurized.jpg\",\n            \"actual_required_qty\": 100,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 46,\n            \"actual_cost\": 46,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Eggs\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"6\",\n            \"quantity_unit\": \"pc\",\n            \"mrp\": \"88\",\n            \"selling_price\": \"88\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40106728_6-ayur-plus-eggs.jpg\",\n            \"actual_required_qty\": 1,\n            \"actual_required_unit\": \"pc\",\n            \"total_cost_at_mrp\": 14.666666666666666,\n            \"actual_cost\": 14.666666666666666,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"100 % Natural Bourbon Vanilla Extract - For Chefs & Home Use, Baking & Desserts\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"100\",\n            \"quantity_unit\": \"ml\",\n            \"mrp\": \"1019\",\n            \"selling_price\": \"1019\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40095601_3-sprig-100-natural-bourbon-vanilla-extract-for-chefs-home-use-baking-desserts.jpg\",\n            \"actual_required_qty\": 5,\n            \"actual_required_unit\": \"ml\",\n            \"total_cost_at_mrp\": 50.949999999999996,\n            \"actual_cost\": 50.949999999999996,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Baking Powder - Double Action Baking Powder, For Light & Fluffy Cakes, Pastries, Naans, Dhoklas, Cookies\",\n            \"desc\": \"Jar\",\n            \"count\": 1,\n            \"quantity\": \"400\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"85\",\n            \"selling_price\": \"83\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40053875_4-weikfield-baking-powder.jpg\",\n            \"actual_required_qty\": 5,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 1.0625,\n            \"actual_cost\": 1.0374999999999999,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Vacuum Evaporated Iodised Edible Common Salt\",\n            \"desc\": \"Pouch\",\n            \"count\": 1,\n            \"quantity\": \"1000\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"28\",\n            \"selling_price\": \"27\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/241600_9-tata-salt-iodized.jpg\",\n            \"actual_required_qty\": 1,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 0.028,\n            \"actual_cost\": 0.027,\n            \"unit_conversion_issues\": false\n        },\n        {\n            \"name\": \"Choco Chips - Dark\",\n            \"desc\": \"\",\n            \"count\": 1,\n            \"quantity\": \"100\",\n            \"quantity_unit\": \"g\",\n            \"mrp\": \"100\",\n            \"selling_price\": \"100\",\n            \"image_url\": \"https://www.bbassets.com/media/uploads/p/m/40075545_3-ask-foods-chocolate-chips.jpg\",\n            \"actual_required_qty\": 100,\n            \"actual_required_unit\": \"g\",\n            \"total_cost_at_mrp\": 100,\n            \"actual_cost\": 100,\n            \"unit_conversion_issues\": false\n        }\n    ],\n    \"total_mrp\": 344.20716666666664,\n    \"total_cost\": 313.1631666666666,\n    \"cost_evaluation_failed_count\": 0,\n    \"ai_generated_recipe\": false,\n    \"is_modified\": false\n}"
 				}
 			]
 		},
@@ -431,7 +431,7 @@
 			},
 			"response": [
 				{
-					"name": "Find Recipe (Sample)",
+					"name": "(Sample) Find Recipe",
 					"originalRequest": {
 						"method": "GET",
 						"header": [],
@@ -499,7 +499,7 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "localhost:3000/recipe?recipe_name=Chicken Malai Tikka",
+					"raw": "localhost:3000/recipe?recipe_name=Fudgy Brownie",
 					"host": [
 						"localhost"
 					],
@@ -510,7 +510,7 @@
 					"query": [
 						{
 							"key": "recipe_name",
-							"value": "Chicken Malai Tikka"
+							"value": "Fudgy Brownie"
 						}
 					]
 				}
@@ -522,7 +522,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "localhost:3000/recipe?recipe_name=Chicken Malai Tikka",
+							"raw": "localhost:3000/recipe?recipe_name=Fudgy Brownie",
 							"host": [
 								"localhost"
 							],
@@ -533,7 +533,7 @@
 							"query": [
 								{
 									"key": "recipe_name",
-									"value": "Chicken Malai Tikka"
+									"value": "Fudgy Brownie"
 								}
 							]
 						}
@@ -560,7 +560,7 @@
 						},
 						{
 							"key": "Date",
-							"value": "Sat, 17 May 2025 12:01:16 GMT"
+							"value": "Sat, 24 May 2025 12:02:57 GMT"
 						},
 						{
 							"key": "Connection",
@@ -586,7 +586,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"recipe_name\":\"Chicken Malai Tikka\",\r\n    \"updated_recipe_fields\":{\r\n        \"recipe_qty\":\"500g\"\r\n    }\r\n}",
+					"raw": "{\r\n    \"recipe_name\":\"Chicken Malai Tikka\",\r\n    \"updated_recipe\":{\r\n        \"recipe_qty\":\"501g\"\r\n    }\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -665,6 +665,67 @@
 					],
 					"cookie": [],
 					"body": "{\n    \"message\": \"Item updated successfully\",\n    \"result\": {\n        \"acknowledged\": true,\n        \"modifiedCount\": 1,\n        \"upsertedId\": null,\n        \"upsertedCount\": 0,\n        \"matchedCount\": 1\n    }\n}"
+				},
+				{
+					"name": "(Sample) Update Recipe",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"recipe_name\":\"Chicken Malai Tikka\",\r\n    \"updated_recipe\":{\r\n        \"recipe_qty\":\"501g\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:3000/recipe",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"recipe"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "141"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"8d-CzDiptOZ3g+B0Gj0XV6oo8P+X+E\""
+						},
+						{
+							"key": "Date",
+							"value": "Mon, 26 May 2025 16:49:25 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Item updated successfully\",\n    \"result\": {\n        \"acknowledged\": true,\n        \"modifiedCount\": 1,\n        \"upsertedId\": null,\n        \"upsertedCount\": 0,\n        \"matchedCount\": 1\n    }\n}"
 				}
 			]
 		},
@@ -695,7 +756,7 @@
 			},
 			"response": [
 				{
-					"name": "Approximately Find Recipe (Sample)",
+					"name": "(Sample) Approximately Find Recipe",
 					"originalRequest": {
 						"method": "GET",
 						"header": [],
