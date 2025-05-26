@@ -1,3 +1,7 @@
+// Author: Matthew Jonathan G
+// This file is part of the Food Recipe Cost Estimator expressJS project.
+// (c) 2024 Matthew Jonathan G. All rights reserved.
+
 import {extractListsFromAIResponse, calculateCostOfIngredients} from "../utils/utility";
 import {fetchItemDetailsList} from "../utils/bigbasket";
 import {AI_REQUEST_TEXT} from "../config/constants";

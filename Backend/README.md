@@ -24,3 +24,7 @@ Major steps done to upgrade to typescript (after node v24 upgrade): -
 * Converted .js files to .ts and did dependency & code level changes for the same.
 
 Current Node version: v24.0.2 (npm 11.3.0)
+
+## Author
+
+Matthew Jonathan G

@@ -1,3 +1,7 @@
+// Author: Matthew Jonathan G
+// This file is part of the Food Recipe Cost Estimator expressJS project.
+// (c) 2024 Matthew Jonathan G. All rights reserved.
+
 import { Document } from "mongoose";
 
 export interface ItemDb extends Document {

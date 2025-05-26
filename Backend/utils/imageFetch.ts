@@ -1,3 +1,7 @@
+// Author: Matthew Jonathan G
+// This file is part of the Food Recipe Cost Estimator expressJS project.
+// (c) 2024 Matthew Jonathan G. All rights reserved.
+
 import {
     RECIPE_FETCH_IMAGE_URL,
     RECIPE_IMAGE_HOST_URL,
