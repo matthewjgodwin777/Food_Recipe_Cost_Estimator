@@ -14,8 +14,10 @@ const path_1 = __importDefault(require("path"));
 require("./config/config");
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const swaggerConfig_1 = require("./config/swaggerConfig");
+const cors_1 = __importDefault(require("cors"));
 const app = (0, express_1.default)();
 app.use(express_1.default.json()); //Middleware to parse JSON body
+app.use((0, cors_1.default)({ origin: 'http://localhost:3000' })); //keep this before app.use lines
 dotenv_1.default.config();
 // Check for required environment variables
 const requiredEnvs = ["BASE_URL", "MONGO_URI", "GITHUB_TOKEN"];
@@ -36,4 +38,4 @@ mongoose_1.default.connect(process.env.MONGO_URI || "")
 app.use("/static", express_1.default.static(path_1.default.join(__dirname, "resources")));
 app.use("/", recipeRoutes_1.router);
 app.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerConfig_1.swaggerSpec));
-app.listen(3000);
+app.listen(8080);

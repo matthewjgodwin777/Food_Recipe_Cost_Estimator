@@ -9,6 +9,7 @@ import { SearchRecipeResult } from "../models/SearchRecipeResult";
 import { querySchema, ingredientResponseSchema,
         ingredientResponseUpdateSchema } from "../models/zodSchemas";
 import { getRecipeNameImageSrc } from "../utils/imageFetch";
+import { pickRecipeFields } from "../utils/filterOutFields";
 
 export const insertRecipe = async (req: Request, res: Response)  => {
     try {
@@ -23,7 +24,7 @@ export const insertRecipe = async (req: Request, res: Response)  => {
         if(!await IngredientResponseModel.findOne({ recipe_name: req.body.recipe_name.trim()})){
             const newRecipe = await IngredientResponseModel.create(req.body); // Save the request body to the database
             console.log("Recipe added to MongoDB:", newRecipe);
-            res.status(201).json({ message: "Recipe added successfully!", recipe: newRecipe });
+            res.status(201).json({ message: "Recipe added successfully!", recipe: pickRecipeFields(newRecipe) });
         } else {
             res.status(400).json({ message: "Recipe with same name already exists in database. Please delete it before adding this entry." });
         }
@@ -49,7 +50,7 @@ export const getRecipe = async (req: Request, res: Response) => {
             res.status(404).json({ message: "Recipe not found" });
             return;
         }
-        res.status(200).json(recipe);
+        res.status(200).json(pickRecipeFields(recipe));
     } catch (error: any) {
         console.error("Error fetching recipe:", error.message);
         res.status(500).json({ message: "Failed to fetch recipe", error: error.message });
@@ -118,7 +119,7 @@ export const searchForRecipes = async (req: Request, res: Response) => {
         recipes.forEach(recipe => {
             const similarity = compareTwoStrings(recipe.recipe_name.toLowerCase(), recipe_name.toLowerCase());
             if (similarity >= 0.75) { // 75% similarity threshold
-                matches.push({ recipe, similarity });
+                matches.push({ recipe: pickRecipeFields(recipe), similarity });
             }
         });
 
