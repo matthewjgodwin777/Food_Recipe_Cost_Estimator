@@ -16,6 +16,7 @@
     "axios-cookiejar-support": "^6.0.2",
     "axios-retry": "^4.5.0",
     "backend": "file:",
+    "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "mongoose": "^8.15.0",
@@ -26,6 +27,7 @@
     "zod": "^3.25.7"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/duckduckgo-images-api": "^1.0.3",
     "@types/express": "^5.0.2",
     "@types/mongodb": "^4.0.6",

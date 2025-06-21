@@ -10,10 +10,11 @@ import path from "path";
 import "./config/config";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swaggerConfig";
+import cors from "cors";
 
 const app = express();
 app.use(express.json()); //Middleware to parse JSON body
-
+app.use(cors({ origin: 'http://localhost:3000' })); //keep this before app.use lines
 dotenv.config();
 
 // Check for required environment variables
@@ -39,4 +40,4 @@ app.use("/static", express.static(path.join(__dirname, "resources")));
 app.use("/", router);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.listen(3000);
+app.listen(8080);
