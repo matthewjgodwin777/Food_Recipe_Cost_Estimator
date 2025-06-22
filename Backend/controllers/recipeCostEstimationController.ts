@@ -22,10 +22,12 @@ export const getRecipeFromAi = async (req: Request, res: Response) => {
         if(req.body.save_to_db && await IngredientResponseModel.findOne({ recipe_name: req.body.recipe_name })){
             console.error("Recipe name already exists in DB.");
             res.status(400).json({message: "Recipe name already exists in DB."});
+            return;
         }
     } catch(err: any){
         console.error("Error while checking entries for duplicates in MongoDB: ", err.message);
         res.status(500).json({message: "Error when checking through database entries."});
+        return;
     }
     
     const instructions = await getIngredientsListFromAi(req.body.recipe_name, req.body.recipe_qty, filteredList);
@@ -48,13 +50,16 @@ export const getRecipeFromAi = async (req: Request, res: Response) => {
             const newRecipe = await IngredientResponseModel.create(finalResponse); // Save the request body to the database
             console.log("Recipe added to MongoDB:", newRecipe);
             res.status(201).json(finalResponse);
+            return;
         } catch(err: any){
             console.error("Error saving Recipe response to MongoDB: ", err.message);
             finalResponse.message += " Error saving to DB : "+err.message;
             res.status(500).json(finalResponse);
+            return;
         }
     } else {
         res.status(200).json(finalResponse);
+        return;
     }
 };
 
@@ -72,10 +77,12 @@ export const getRecipeCostEstimation = async (req: Request, res: Response) => {
         if(req.body.save_to_db && await IngredientResponseModel.findOne({ recipe_name: req.body.recipe_name })){
             console.error("Recipe name already exists in DB.");
             res.status(400).json({message: "Recipe name already exists in DB."});
+            return;
         }
     } catch(err: any){
         console.error("Error while checking entries for duplicates in MongoDB: ", err.message);
         res.status(500).json({message: "Error when checking through database entries."});
+        return;
     }
 
     await getIngredientsList(req.body.ingredientNames, req.body.ingredientQtys, req.body.ingredientUnits, filteredList);
@@ -100,12 +107,15 @@ export const getRecipeCostEstimation = async (req: Request, res: Response) => {
             console.log("Recipe added to MongoDB:", newRecipe);
             finalResponse.message += " Recipe was successfully saved in DB!"
             res.status(201).json(finalResponse);
+            return;
         } catch(err: any){
             console.error("Error saving Recipe response to MongoDB: ", err.message);
             finalResponse.message += " Error saving to DB : "+err.message;
             res.status(500).json(finalResponse);
+            return;
         }
     } else {
         res.status(200).json(finalResponse);
+        return;
     }
 };

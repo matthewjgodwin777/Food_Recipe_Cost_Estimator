@@ -25,12 +25,15 @@ export const insertRecipe = async (req: Request, res: Response)  => {
             const newRecipe = await IngredientResponseModel.create(req.body); // Save the request body to the database
             console.log("Recipe added to MongoDB:", newRecipe);
             res.status(201).json({ message: "Recipe added successfully!", recipe: pickRecipeFields(newRecipe) });
+            return;
         } else {
             res.status(400).json({ message: "Recipe with same name already exists in database. Please delete it before adding this entry." });
+            return;
         }
     } catch (error: any) {
         console.error("Error adding recipe:", error.message);
         res.status(500).json({ message: "Failed to add recipe", error: error.message });
+        return;
     }
 };
 
@@ -51,9 +54,11 @@ export const getRecipe = async (req: Request, res: Response) => {
             return;
         }
         res.status(200).json(pickRecipeFields(recipe));
+        return;
     } catch (error: any) {
         console.error("Error fetching recipe:", error.message);
         res.status(500).json({ message: "Failed to fetch recipe", error: error.message });
+        return;
     }
 };
 
@@ -75,9 +80,11 @@ export const updateRecipe = async (req: Request, res: Response) => {
             return;
         }
         res.status(200).json({ message: "Item updated successfully", result });
+        return;
     } catch (error: any) {
         console.error("Error updating item:", error.message);
         res.status(500).json({ message: "Failed to update item", error: error.message });
+        return;
     }
 };
 
@@ -97,9 +104,11 @@ export const deleteRecipe = async (req: Request, res: Response) => {
             return;
         }
         res.status(200).json({ message: "Recipe deleted successfully", result });
+        return;
     } catch (error: any) {
         console.error("Error deleting recipe:", error.message);
         res.status(500).json({ message: "Failed to delete recipe", error: error.message });
+        return;
     }
 };
 
@@ -132,8 +141,10 @@ export const searchForRecipes = async (req: Request, res: Response) => {
         matches.sort((a, b) => b.similarity - a.similarity);
 
         res.status(200).json(matches);
+        return;
     } catch (error: any) {
         console.error("Error performing fuzzy search:", error.message);
         res.status(500).json({ message: "Failed to perform fuzzy search", error: error.message });
+        return;
     }
 };
