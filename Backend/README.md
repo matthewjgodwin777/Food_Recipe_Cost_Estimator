@@ -1,6 +1,7 @@
 This is an expressJS application written in typescript, which helps to estimate the cost of the volume/mass of ingredients in a recipe. The recipe can be obtained on your behalf using an api call to an AI/GPT but you can also give your own recipe through the respective endpoints and use mongoDB as database.
 
 Feel free to try hitting these endpoints using the postman collection I've added in this repo.
+(WARNING: Postman collection might not be perfectly upto date for some fields/behaviours. Please refer the controller file for more accuracy.)
 
 Access the /api-docs endpoint for the swagger UI created for this application for more details of each endpoint.
 
@@ -14,7 +15,7 @@ Then you can use "node dist/app.js" to start the application (as dist is the tar
 Alternatively, you can also use "npm run devStart" to run the app.
 
 
-Strong NOTE: BASE_URL, MONGO_URI and GITHUB_TOKEN are the 3 env variables required to run this application.
+Strong NOTE: BASE_URL ( eg: "http://localhost:3000" ), MONGO_URI ( eg: "mongodb://localhost:27017/recipedb" ) and GITHUB_TOKEN are the 3 env variables required to run this application.
 Please generate your own token from github in settings' to access the GPT's api, and use your mongodb url/connection string.
 
 
@@ -24,6 +25,8 @@ Major steps done to upgrade to typescript (after node v24 upgrade): -
 * Converted .js files to .ts and did dependency & code level changes for the same.
 
 Current Node version: v24.0.2 (npm 11.3.0)
+
+NOTE: Please do "npm install" command before you proceed with running the app!
 
 ## Author
 
