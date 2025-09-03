@@ -851,7 +851,8 @@ JUnit4 had Runners (@RunWith,but were unable to use multiple runners), now we ha
 @ContextConfiguration(classes={SystemTestConfig.class}):
 TestContext framework, defines appcontext for tests, and USES THIS ANNOTATION to specify which configuration class to use for the application context.
 
-FUN FACT: @SpringJUnitConfig(SystemTestConfig.class) IS THE COMBONATION OF THE ABOVE 2 ANNOTATIONS (@ExtendWith(SpringExtension.class) and @ContextConfiguration(classes={SystemTestConfig.class}))
+FUN FACT: @SpringJUnitConfig(SystemTestConfig.class) IS THE COMBONATION OF THE ABOVE 2 ANNOTATIONS (@ExtendWith(SpringExtension.class) and @ContextConfiguration(classes={SystemTestConfig.class})).
+And when either of these config specifications are used, THERE IS NO NEED FOR manually running springboot application .run() to create context (it handles it).
 
 
 IMPORTANT NOTE: In Normal Springboot application, YOU CANNOT INJECT @Autowired to SPECIFIC PARAMs in a method alone instead of whole method,
@@ -896,6 +897,35 @@ public class SampleJUnitTests {
 
 Above annotation can be annotated on a Tests class TO OVERRIDE OR ADD properties to be used for Tests IN THIS CLASS.
 Properties or property file mentioned this was HAVE HIGH PRIORITY and override any other property.
+
+
+@ActiveProfiles({"jdbc","dev"}) OR spring.profiles.active=jdbc,dev
+ - Annotation used on JUnit 5 class to take not just Non-profile-specific beans alone, but ALSO Beans, which are declared with @Profile("jdbc") (and "dev" ones too) on the configuration classes or bean classes (or EVEN ON BEAN METHODS), in the test application context.
+
+Note: By default no profile is activated, there ISNT any default profile/profile name used.
+
+
+@Sql({"/testfiles/schema.sql","/testfiles/load-data.sql"})   OR   @Sql(scripts="/testfiles/setupBadTransfer.sql")
+   -   This annotation can be used on a JUnit5 test class to RUN THESE SQL scripts BEFORE EACH @Test method executions, UNLESS THE @Test method has @Sql specified for it especially, then it follows that annotation(s).
+If used on JUnit5 TEST METHOD, it overrides the class level annotation, running the method specific @Sql scripts (by default, BEFORE the @Test execution).
+
+@Sql(scripts="/testfiles/cleanup.sql",
+		executionPhase=Sql.ExecutionPhase.AFTER_TEST_METHOD)   -    By default it is executed before, using this EXPLICIT option, it executes AFTER the @Test.
+
+The @Sql annotation also has a config value you can specify:
+@Sql(..., config = @SqlConfig(errorMode = ErrorMode.FAIL_ON_ERROR,
+						commentPrefix="//", separator="@@") )
+
+ErrorMode config options for @Sql in Spring:
+
+FAIL_ON_ERROR: Stops execution if any SQL statement in the .sql file fails.
+CONTINUE_ON_ERROR: Continues executing remaining SQL statements even if one fails.
+IGNORE_FAILED_DROPS: Ignores errors from failed DROP statements, but fails on other errors.
+DEFAULT: Uses the default error handling (usually same as FAIL_ON_ERROR). TYPICALLY takes @Sql config parameter from class level @Sql, OR DEFAULTS TO FAIL_ON_ERROR. (usually its fail on error)
+
+Other config internal options (SQL syntax control):
+commentPrefix: Marks the start of a comment in SQL scripts (e.g. -- )
+separator: Defines the statement separator in SQL scripts (e.g. ; )
 
 
 
