@@ -928,6 +928,54 @@ commentPrefix: Marks the start of a comment in SQL scripts (e.g. -- )
 separator: Defines the statement separator in SQL scripts (e.g. ; )
 
 
+JDBC Template: -
+
+Templates in Spring like: JdbcTemplate, JmsTemplate, RestTemplate, WebServiceTemplate.
+They hide away boiler plate code, And can specify other details later if needed. All exception handling, resources are handled properly.
+
+int count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM CUSTOMER", Integer.class); //HANDLES EVERYTHING ELSE!
+
+// Note: queryForInt() and queryForLong() are deprecated and removed since Spring 4.2
+
+It also allows CALLBACKS to be used to add the important implementation logic alone.
+Eg: The logic to map the SQL row values into creating an object TO HOLD THOSE VALUES can be sent as a callback (RowMapper).
+
+List<Customer> results = jdbcTemplate.query(someSqlStatementString,
+    new RowMapper<Customer>(){
+	public Customer mapRow(ResultSet rs, int row) throws SQLException {
+	    //map the current row elements to Customer obj. int row will have value 0 if its first element, then 1,.. so on, use only if needed.
+	    //The resultset POINTER WILL BE MOVED AUTOMATICALLY EACH TIME IN SEQUENCE, like mapRow() call is done INSIDE while(rs.next()){} !
+	}
+});
+
+NOTE: while int row supplied by Spring starts from 0 as index, 
+      rs.getString() TAKES INT PARAM FROM 1, NOT 0 !!! (That's because its part of old jdbc version while this int row is supplied by spring so its new)
+
+
+JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource); // NEEDS Datasource as constructor param.
+// JdbcTemplate class IS THREADSAFE AFTER CONSTRUCTION!
+// So dont need to create one for each thread. Can be used anywhere even tests.
+
+JdbcTemplate can query for the usual Simple types (int,long,String,Date), Generic Maps, Domain Objects
+
+Query With Bind Variables:
+jdbcTemplate.queryForObject("SELECT count(*) from person WHERE age > ? AND nationality = ?",
+	Integer.class, 12, "Indian");
+
+//BELOW METHOD update() IS USED FOR INSERT OPERATIONS ALSO!!!
+jdbcTemplate.update("INSERT INTO NAME (first_name,last_name) VALUES (?,?)",
+	"Matthew","Jonathan G");
+
+jdbcTemplate.update("UPDATE NAME SET last_name=?","John")
+
+
+
+
+
+
+
+
+
 
 
 ---------------------------------------------------
