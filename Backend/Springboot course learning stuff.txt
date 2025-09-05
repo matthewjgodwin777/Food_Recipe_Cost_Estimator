@@ -968,7 +968,54 @@ jdbcTemplate.update("INSERT INTO NAME (first_name,last_name) VALUES (?,?)",
 
 jdbcTemplate.update("UPDATE NAME SET last_name=?","John")
 
+jdbcTemplate.queryForMap("SELECT * FROM person WHERE id=?", 1) - Used to map query RETURNING ONE ROW into 1 Map<String, Object> object as return value.
+jdbcTemplate.queryForList("SELECT * FROM person") - Similar as above except returns multiple Maps as List<Map<String, Object>>
 
+NOTE: Depending on the DB driver, the case of the column name (aka Key) in the map can vary, cant say if it will be in upper or lower case for sure. (But Spring course example shows in uppercase depiction)
+
+Domain Object Queries (Mapping of resultset to domain pojo objects using callback approach) :
+* public interface RowMapper<T> {
+	T mapRow(ResultSet rs, int row) throws SQLException;
+}
+
+Eg: 
+
+jdbcTemplate.queryForObject("SELECT first_name,last_name FROM person WHERE id=?",
+				(rs,rowNum)-> new Person( rs.getString("first_name"),rs.getString("last_name") ),
+				idValue);  // Returns pojo object. and YES, Id value comes AFTER rowmapper lambda passed.
+    
+FOR MULTIPLE OBJECTS To be returned, use .query() method instead, REMOVE the idValue param supplied as syntax related changes.
+And it will return List<PojoObject> in this case.
+
+* public interface ResultSetExtractor<T> {
+	T extractData(ResultSet rs) throws SQLException, DataAccessException;
+}
+
+Eg: Same as .query() method syntax above, EXCEPT that LAMBDA NEEDS TYPE CASTING (as THERE IS AMBIGUITY due to other ResultSet variations of .query() method, but RowMapper doesn't have this issue)
+
+jdbcTemplate.query(
+	"SELECT ID,NAME FROM order o WHERE confirmation_id=?",
+	(ResultSetExtractor<Order>) (rs) -> {
+		// THIS LAMBDA RUNS ONLY ONE TIME! So MANUALLY iterate and map rs to return 1 object of type Order.
+		// Get the rs column values using rs.getLong("ID"), rs.getString("NAME") inside while(rs.next()){}
+	},
+	confirmationIdValue	// Same as rowmapper syntax, after lambda only the '?' param values are supplied
+)
+
+RowCallbackHandler is similar to RowMapper, but IT DOESNT RETURN ANYTHING. Its just for processing and not returning some obj.
+
+
+Exception Handling: -
+
+SQLException, like all other checked exceptions MAKE TIGHT-COUPLING of methods AS ALL INTERMEDIATE METHODS NEED TO DECLARE TO THROW such exceptions,
+Incase you want to handle the exception at a higher level, so all method signatures have to handle this correctly, a nuisance.
+
+DataAccessException is provided by Spring, an UNCHECKED HEIRARCHY of Exceptions which WRAPS SQLException by catching it,
+giving A MORE MEANINGFUL EXCEPTION TYPE THROWN.
+
+Like instead of SQLException, it can be wrapped into some meaningful unchecked exceptions like: 
+BadSqlGrammarException (if there is sql syntax error),
+DataAccessResourceFailureException, CleanupFailureDataAccessException, OptimisticLockingFailureException, DataIntegrityViolationException.
 
 
 
