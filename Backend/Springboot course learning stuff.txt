@@ -1002,8 +1002,16 @@ jdbcTemplate.query(
 	confirmationIdValue	// Same as rowmapper syntax, after lambda only the '?' param values are supplied
 )
 
-RowCallbackHandler is similar to RowMapper, but IT DOESNT RETURN ANYTHING. Its just for processing and not returning some obj.
+* RowCallbackHandler is similar to RowMapper, but IT DOESNT RETURN ANYTHING. Its just for processing and not returning some obj.
 
+public interface RowCallbackHandler {
+	void processRow(ResultSet rs) throws SQLException;
+}
+
+
+** CAUTION ** : the .query() method accepts ALL 3 callback obj types,
+		BUT .queryForObject() ONLY ACCEPTS RowMapper CALLBACK, not other 2 !!!
+		REST OF THE 2 QUERY METHODS (list and map), and update() DO NOT ACCEPT SUCH CALLBACKS !
 
 Exception Handling: -
 
@@ -1016,6 +1024,122 @@ giving A MORE MEANINGFUL EXCEPTION TYPE THROWN.
 Like instead of SQLException, it can be wrapped into some meaningful unchecked exceptions like: 
 BadSqlGrammarException (if there is sql syntax error),
 DataAccessResourceFailureException, CleanupFailureDataAccessException, OptimisticLockingFailureException, DataIntegrityViolationException.
+
+
+
+Transactions : -
+
+ACID principle:
+Atomicity - Each unit of work done is ALL OR NOTHING operation. Either full work committed or ROLLED BACK.
+Consistency - No DB integrity rules or constraints are violated, ensures DB always is in valid state/data.
+Isolation - Isolating changes (in progress/uncommitted) of transactions from each other. Only when one is committed, it's visible to the other.
+Durablity - Once transaction is committed, changes are permanent, and can survive a system failure, power outage, etc. (Non-volatile)
+
+
+Without transaction, till now, each time DB connection was acquired, used, and then released, several times this happening in 1 atomic work is bad. Transaction should/will ensure ONE connection is reused for such individual db operations, then released. Either all succeed or fail.
+
+Separation of Concerns
+Demarcation (@Transactional): You mark a method to indicate it should run in a transaction. Spring handles the rest automatically.
+Implementation (PlatformTransactionManager): An underlying component handles the actual transaction logic (begin, commit, rollback), based on the configured manager.
+
+2 Ways to use/include transactions in your code: -
+Declarative (@Transactional): Recommended. Use an annotation. Spring's AOP creates a proxy that intercepts the method call to manage the transaction.
+Programmatic (TransactionTemplate): Less common. Manually control transactions inside code for fine-grained control.
+
+Global vs. Local Transactions
+Spring uses @Transactional for both. Your code doesn't change when switching between them.
+Just change the PlatformTransactionManager bean in your configuration between them.
+
+The PlatformTransactionManager: -
+Abstraction: A generic interface in Spring for transaction strategies.
+Implementations: Different managers for different needs.
+
+Local transactions (single resource [db/msg queue] ) : These manage transactions for a single resource, such as one database or one message queue.
+
+DataSourceTransactionManager: Manages transactions for a single JDBC DataSource. Use this for applications that access a database via plain JDBC.
+JpaTransactionManager: Handles transactions for a JPA EntityManagerFactory. This is typically used with JPA providers like Hibernate.
+JmsTransactionManager: Manages transactions for a single JMS ConnectionFactory. It's suitable for applications that only involve a single message queue.
+HibernateTransactionManager: Manages transactions specifically for Hibernate's native SessionFactory API (without using JPA).
+
+Global transactions (multiple resources [db/msg queue]): These coordinate transactions across multiple transactional resources, like several databases or a database and a message queue. They require a transaction manager in an application server or a standalone JTA provider. They CAN ALSO DO local transactions but just more overhead due to TWO phase commits.
+
+JtaTransactionManager: Delegates transaction management to the JTA (Java Transaction API) provider, which is often part of a Java EE/Jakarta EE application server. This is the standard choice for distributed transactions.
+WebLogicJtaTransactionManager: A specialization of JtaTransactionManager for the BEA (now Oracle) WebLogic application server, providing additional vendor-specific features.
+WebSphereUowTransactionManager: A specialization for the IBM WebSphere application server, using its Unit of Work (UOW) API to manage global transactions.
+
+Just like other concepts, Transaction ALSO WORKS BY PROXYING THE BEAN, simply having SpringTransactionInterceptor intercept any request for target method/class (both work together as 1),
+And it communicates with TransactionManager to begin/commit, adding transaction management behaviour to the code.
+
+As expected, Transaction is started before entering method, Commits at end of normal method execution.
+ROLLBACKS if method throws a RuntimeException BY DEFAULT. (can be overridden)
+Checked exceptions DO NOT CAUSE ROLLBACK BY DEFAULT, BUT ALL THIS EXCEPTION BEHAVIOUR CAN BE OVERRIDEN USING:
+
+@Transactional(rollbackFor = MyCheckedException.class, noRollbackFor = MyRecoverableRuntimeException.class))
+
+Caution: Incase similar exception type (or even same) is mentioned in both opposite attributes, noRollbackFor takes PRECENDENCE !
+
+Transaction context bound to Current Thread HOLDS THE UNDERLYING JDBC CONNECTION. Hibernate sessions, JTA (Java EE) work similarly.
+JdbcTemplate CAN USE this capability automatically IF USED IN @Transactional method.
+
+(Can also fetch Connection manually using DataSourceUtils.getConnection(dataSource))
+--------------
+
+Step 1: @EnableTransactionManagement (add to config class)
+
+Step 2: Create a Bean returning PlatformTransactionManager implementation.
+
+Step 3: @Transactional (add on method required to be transactional)
+
+Eg: DataSourceTransactionManager is created by new DataSourceTransactionManager(dataSourceObj);
+    While new JtaTransactionManager() doesn't required any constructor param.
+
+@Transactional can be declared on CLASS or EVEN INTERFACE! (since Spring 5.0)
+
+@Transactional(timeout=60) - Sets timeout in seconds for transaction if it exceeds it.
+
+IF USED ON CLASS, its the default value for all methods in it, IF METHOD HAS the annotation TOO, it will use that specifically for that method alone instead.
+
+WARNING: JAVA ALSO HAS @Transactional annotation, BUT ITS NOT THE SAME AS SPRING's @Transactional.
+	 BE CAREFULY AND USE ONLY THE SPRING ONE.
+
+
+@Transactional( propagation = Propagation.REQUIRED ) : [ DEFAULT VALUE ]
+
+Creates one (obviously as usual) if method not in a transaction already.
+If a @Transactional method CALLS ANOTHER @Transactional method, WHAT HAPPENS ???
+The Transactions JOIN TOGETHER, which is one way. (Though marked as 2, internally logic works like 1 transaction)
+
+
+@Transactional( propagation = Propagation.REQUIRES_NEW )
+
+If you really want separate transactions, you can specify it. It will be separate independent transactions.
+And NO, THEY AREN'T NESTED, Like Second Transaction can commit, but First can fail, that wouldn't happen if they were "nested" right? so yep,
+It CREATES NEW INDEPENDENT TRANSACTION ALWAYS (If already one is there, it SUSPENDS it temporarily) !
+
+
+CAUTION (MASSIVE ONE):
+
+JUST LIKE OTHER PROXY BEAN BEHAVIOUR, if one @Transactional annotated method calls another one,
+WHICH IS IN THE SAME CLASS, then THE CALL DOES NOT GO THROUGH PROXY BEAN, and hence THAT SECOND METHOD's propagation rule WONT APPLY !!!
+Think about it, Proxy is injected instead of real target, so when you call method FROM ANOTHER BEAN, it will call proxy,
+AS METHOD CALL HAPPENS ON OBJECT INJECTED (aka meaning its proxy if applicable).
+
+BUT CALLING FROM THE METHOD (which you called using proxy bean) to another method INTERNALLY INSIDE SAME CLASS,
+It's not calling on the proxy bean actually, it will call the actual TARGET class method itself DIRECTLY (think about it),
+Proxy cant intercept if YOURE ALREADY INSIDE THE TARGET, only if outside and you injected and used obj, it can act as proxy.
+Internal calls are directly in the target obj itself, like its literally that datatype as the class name, cant be some random proxy class.
+
+
+You CAN make @Test methods TRANSACTIONAL !
+But in this case, if you make it so, IT WILL ROLLBACK FOR SURE (since it's a test), UNLIKE THE MAIN CODE WHERE IT CAN COMMIT IF NO ERROR.
+
+Warning: IF YOU START different TRANSACTION INSIDE the method body, then this RULE DOES NOT APPLY.
+
+If you REALLY WANT TO COMMIT @Test method changes, NOT rollback, then:
+@Commit if you use on the @Test method (@Transactional either on method or class itself), THEN IT WILL COMMIT TRANSACTION like main code!
+
+
+
 
 
 
