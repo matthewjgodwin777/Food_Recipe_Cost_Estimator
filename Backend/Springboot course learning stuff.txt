@@ -89,9 +89,10 @@ delete (Atleast in CRUD repository)
 
 Note: Have to explore how repository interface we just type method name and it correctly does the queries behind the scenes.
 
+URI (Uniform Resource Identifier): Identifies a resource — can be a name, location, or both. Example: urn:isbn:9780134685991
+URL (Uniform Resource Locator)   : A type of URI that tells you how to locate a resource.    Example: https://example.com/page
 
-
-
+UriComponents
 
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -284,8 +285,8 @@ REMEMBER: @Autowired is STILL REQUIRED even if all paramters of constructor is a
 THen no need of autowired because IMPLCITLY its assumed. But generally Autowired is implcitly or explicitly needed at minimum to ATLEAST INDICATE
 WHICH CONSTRUCTOR TO USE.
 
-spEL can do this and all, whereas EL is more basic: 
-@Value("#{T(java.lang.Math).random() * 100}")
+spEL can do this and all as below, whereas EL is more basic: 
+@Value("#{T(java.lang.Math).random() * 100}") // where the T() ensures java.lang.Math is seen as a type/class, NOT as 'java' bean with member lang.Math
 
 
 Annotation-based Configuration: -
@@ -851,7 +852,7 @@ JUnit4 had Runners (@RunWith,but were unable to use multiple runners), now we ha
 @ContextConfiguration(classes={SystemTestConfig.class}):
 TestContext framework, defines appcontext for tests, and USES THIS ANNOTATION to specify which configuration class to use for the application context.
 
-FUN FACT: @SpringJUnitConfig(SystemTestConfig.class) IS THE COMBONATION OF THE ABOVE 2 ANNOTATIONS (@ExtendWith(SpringExtension.class) and @ContextConfiguration(classes={SystemTestConfig.class})).
+FUN FACT: @SpringJUnitConfig(SystemTestConfig.class) IS THE COMBINATION OF THE ABOVE 2 ANNOTATIONS (@ExtendWith(SpringExtension.class) and @ContextConfiguration(classes={SystemTestConfig.class})).
 And when either of these config specifications are used, THERE IS NO NEED FOR manually running springboot application .run() to create context (it handles it).
 
 
@@ -1140,10 +1141,804 @@ If you REALLY WANT TO COMMIT @Test method changes, NOT rollback, then:
 
 
 
+----------------------------------
+
+Springboot Course:=
+
+Usually in springboot main class, we use 3 annotations together:
+
+* @SpringBootConfiguration - Marks a class as a source of configuration specifically for a Spring Boot application.
+
+* @ComponentScan - Tells Spring which packages to scan for components like @Component, @Service, and @Repository. This automatically registers them as beans in the application context. 
+
+* @EnableAutoConfiguration - Automatically configures Spring beans based on the dependencies found in your project's classpath. For example, it sets up a web server if you have spring-boot-starter-web.
+
+
+@SpringBootApplication(scanBasePackages="example.config") CAN REPLACE THESE 3 into just 1 annotation !!
+
+In springboot, autoconfiguration checks like h2/derby/etc is there in classpath, then datasoure obj can be created or not based on properties etc.
+
+A "Fat" JAR basically contains ALL dependencies required to run the web application. (even the required tomcat server)
+So it can be simply run using the java -jar command.
+
+Using the mvn package command or the gradle assemble command, you can create the required jars:
+Eg: my-app.jar can be the executable "FAT" JAR,
+whereas my-app.jar.original can be the "usual" JAR. (has ONLY CODE without the depndencies)
+
+The below dependenency mentioned inside a <plugin>...</plugin> alone, WILL CREATE A "FAT" JAR:
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-maven-plugin</artifactId>
+
+Ensure to use springboot:run option as a goal to it, so it runs the app.
+
+@SpringJUnitConfig(SystemTestConfig.class) is usually used till now for JUnit 5 testing as it creates beans in test app context
+only as many as required, NOT doing it exactly like it would happen in the real application.
+
+@SpringBootTest(classes=Application.class) - IT'S THE ANNOTATION you can use to RUN THE ENTIRE application like in the main app run.
+It's ideal for more general like Integration tests.
+
+@SpringBootConfiguration - Optionally, you DONT have to mention the classes param value in the @SpringBootTest annotation
+ONLY IF you have this annotation @SpringBootConfiguration on your TestConfiguration class where there is @ComponentScan, @EnableAutoConfiguration, etc.
+
+WARNING: If you use @SpringBootTest ALONE no params in your test class,
+YOU HAVE TO ENSURE the @SpringBootConfiguration annotated TestConfig class IS IN A PACKAGE ONE LEVEL HIGHER THAN the former.
+And ONLY ONE of such configuration classes can exist in a hierarchy, basically NO multiple PRIMARY configuration classes.
+(but generally multiple normal config classes allowed!)
+
+
+Ideally to start springboot project, you can use spring initializer (also opensource),
+But mainly 3 files are needed: pom.xml (for maven), Application.java (main class) , and application.properties
+
+
+@SpringBootApplication is a combination of 3 annotations:
+@SpringBootConfiguration (primarily to specify main class without specifying in SpringTests)
+@EnableAutoConfiguration (Some Beans are autocreated based on classpath dependencies)
+@ComponentScan
+
+For example, JdbcTemplate WILL BE AUTOCREATED in app context, just inject it and use.
+
+Commands to run app:
+"mvn package" then use "java -jar JarName.jar"
+
+
+logging.level.root=DEBUG
+# Logs only log statements of MORE SEVERE OR EQUAL to the specified level.
+# List of Logging levels (in asc. order of severity):
+# TRACE (least severe)
+# DEBUG
+# INFO
+# WARN
+# ERROR
+# FATAL (most severe)
+
+
+If you keep 2 SQL files names schema.sql and data.sql,
+IN A FOLDER PRESENT IN CLASSPATH (like "src/main/resources"),
+Then SpringBoot WILL RUN IT automatically at the start,
+Else if it is in some other subfolder, use this:
+#path like classpath:db/schema.sql can be used
+spring.sql.init.schema-locations=<path to your schema SQL file>
+spring.sql.init.data-locations=<path to your data SQL file>
+
+If you have banner.txt and it contains something (ideally meant to be like \___\ symbols used diagramatically),
+Then at start of running application, SPRINGBOOT WILL DISPLAY THIS BANNER INSTEAD OF THE DEFAULT ONE.
+
+assertThat(1).isEqualTo(21); is example of asset statement in test.
 
 
 
+Environment and @Value annotation can be used to fetch properties and env values from application.properties or other @PropertyConfig sources.
 
+application.properties is looked for in priority in following:
+* /config subdirectory of the working directory (config subdir in the directory where executable jar is executed in target folder)
+* The working directory (same directory as executable jar in target folder)
+* config package in classpath (eg: src/main/resources/config/application.properties)
+* classpath root (eg: src/main/resources/application.properties)
+
+(if multiple same property is mentioned in the same file twice or more, LAST ENTRY IS TAKEN.
+Also YOU SHOULD ONLY put properties of imp early created beans properties in this file or yaml (like LOGGING LEVEL or other important early initialized beans), not in some random PropertySource as application.properties or .yaml is loaded first)
+
+Apart from this, springboot also looks for PROFILE-SPECIFIC like application-dv.properties
+
+YAML FILE properties also can be specified: -
+
+- environment.getProperty("server.port") or  @Value("${my.app.name}") can ONLY be used with snakeyaml.jar inside spring-boot-starter dependency is used)
+
+- .yaml files neeed to use 2 spaces for indentation rather than tab space.
+
+- ALL 2x4=8 possible files are attempted to be loaded.
+
+- The SAME PRECEDENCE order as for .properties files is used, where IF BOTH .yaml and .properties ARE IN THE SAME LOCATION,
+  any SHARED properties in .properties file IS MORE PRIORITY THAN one in .yaml.
+
+- The parsing done to find these IS DONE FROM LOWEST PRIORITY, as it comes to higher priority files, PRE-EXISTING PROPERTIES ARE OVERWRITTEN WHEN ENCOUNTERED. So just follow priority list of 8 files blindly, but all 8 files are looked if they have some unique properties atleast.
+
+- In yaml, the following way can be used to specify different profile properties IN SAME yaml FILE:
+
+.....
+..... (Common properties here always loaded, till the 3 dashes is encountered)
+---
+spring:
+  profiles: local
+  datasource:
+    url: .......
+---
+spring:
+  profiles: cloud
+  datasource:
+    url: .......
+
+
+
+Properties Overall Heirarchy (in order): -
+
+1. Devtools settings
+2. @TestPropertySource and @SpringBootTest properties
+3. Command line arguments
+4. SPRING_APPLICATION_JSON (inline JSON properties).
+5. ServletConfig / ServletContext parameters.
+6. JNDI attributes from java:comp/env
+7. Java System properties
+8. OS environment variables
+9. Profile-specific application properties
+10. Application properties / YAML
+11. @Property Source files
+12. SpringApplication.setDefaultProperties.
+
+
+
+@ConfigurationProperties :
+
+If you want to map certain properties to a BEAN OBJECT, like these:
+reward.client.host=192.168.1.42
+rewards.client.port=8080
+
+YOU CAN INJECT PROPERTIES INTO A BEAN OBJECT FOR ACCESS SOMEWHERE ELSE!
+
+@ConfigurationProperties(prefix=rewards.client) //all properties will be fetched with this prefix
+public class ConnectionSettings{ //Inject this bean anywhere like normal to get properties
+	private String host;
+	private int port;
+// getters and setters are mandatory ofcourse
+}
+
+WARNING: To enable this behaviour of property injection using this annotation, 3 WAYS are there:
+* Annotate @Component on above class
+* Annotate @EnableConfigurationProperties(ConnectionSettings.class) on MAIN CLASS.
+* Annotate @ConfigurationPropertiesScan on Main class (springboot 2.2.0+ onwards),
+  Like @ComponentScan, THIS TOO SCANS the package of the class it's hosted on AND it's subpackages.
+
+
+WARNING: If @ConfigurationProperties is used say with "rewards.client-connection", hostUrl as a variable,
+The VARIOUS LEGAL MATCHES NEED NOT BE EXACT, CAN VARY SLIGHTLY AS FOLLOWS: (mix & match mostly is a NO)
+* rewards.clientConnection.hostUrl (Camelcase words separation)
+* rewards.client-connection.host-url (hyphens)
+* rewards.client_connection.host_url (underscores)
+* REWARDS_CLIENTCONNECTION_HOSTURL (For matching with ENV variables, capitalizes, removed dashes,
+	replaces dots with underscores, and using this new string, it searches for a value in envs.)
+
+
+@EnableAutoConfiguration (or just @SpringBootApplication is enough) on main class enables Spring's Configuration classes. (can create our own too)
+They are @Configuration classes which are activated CONDITIONALLY based on things like:
+Do classpath include specific classes, or some specific properties are set, or some beans already configured (or not)
+
+Eg: JdbcTemplate is autoconfigured IF a DataSource bean is present in context,
+Which can be present if there is dependency in classpath + properties relevant are there in properties files.
+
+
+@ConditionalOnBean(DataSource.class) :
+This annotation when annotated on bean class/method, IT's ONLY actually initialized as bean IF DataSource bean is present.
+
+@ConditionalOnClass [If given class exists in classpath], @ConditionalOnProperty [If given property has a particular value],
+@ConditionalOnMissingBean / ...MissingClass [Similar to above except only creates bean IF SPECIFIED BEAN/CLASS is missing instead]		
+(Even @Profile annotation is in this category)
+
+
+@AutoConfiguration annotation specifies a class EXPLICITLY for autoconfiguration. (Can be overridden)
+Such classes only are enabled AFTER THE EXPLICIT beans you specify are CREATED.
+(so missing ones are configured, and your beans defined always are preferred over AutoConfiguration beans)
+
+There are 4 ways to controlling autoconfig classes:
+- Set Springboot properties
+	Eg: In springboot, spring.datasource.url/username/etc properties if are present, DataSource is prepared using @ConfigurationProperties("spring.datasource") on a bean,so only if you configure these properties you can control the datasource's params.
+
+  Eg: Same way logging.level.org.springframework=DEBUG is a kind of property to control the logging framework.
+      Basically whatever you put after "logging.level.", THAT PACKAGE's LOGGING WILL ONLY BE AFFECTED. More specific ones OVERRIDE general ones.
+      (Springboot uses SLF4J as default "facade"/pattern interfaces/classes, with LogBack implementations for it, this is recommended)
+
+
+-Explicilty specify the beans yourself so springboot won't
+
+- Explicitly disable some AutoConfiguration
+
+@EnableAutoConfiguration and @SpringBootApplication has (exclude=DataSourceAutoConfiguration.class) option for you to EXCLUDE any class you dont want so it doesn't autoconfigure.
+(OR)
+Have this property: spring.autoconfigure.exclude=\
+			org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
+(Yes, a property can be extended beyond more than 1 line using '\' operator, next line you can indent and put value without issue)
+
+- Change dependencies or their versions.
+
+If you want to use Jetty instead of Tomcat server, you can specify spring-boot-starter-jetty dependency, BUT EXCLUDE tomcat FROM STARTER WEB DEPENDENCY as follows:
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-web</artifactId>
+	<exclusions>
+		<exclusion>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+		</exclusion>
+	</exclusions>
+</dependency>
+
+
+As seen before, DataSource can be Auto-configured by 3 ways: predefined properties, define own bean instead,
+CHANGE UNDERLYING DATASOURCE CONNECTION POOL IMPLEMENTATION
+
+Connection pool can create and contain multiple connections for multiple usage to prevent multiple connections open and close.
+
+You have seen spring.datasource.url/username/password/driver-class-name
+We have below properties for AFFECTING UNDERLYING CONNECTION POOL (doesn't look so but yes) :
+spring.datasource.initial-size/max-active/max-idle/min-idle
+
+Note: Each connection pool IS FOR ONE DATABASE, yes multiple of such connection objects are there
+      So they can use DIFFERENT NETWORK SOCKETS FOR THE SAME DB FOR CONCURRENCY/PERFORMANCE (or each db operation has to wait for the other)!
+
+
+Default Pooled DataSource for springboot 1.x.x is Tomcat and for 2.x.x its Hikari. (can be in sp-bt-starter-jdbc or ..-..-starter-jpa)
+Apache Commons DBCP2 is the backup if both dependencies arent present.
+Can use spring.datasource.type to pick pool explicitly.
+
+Even if regular datasource general property can be used, spring.datasource.tomcat.*, or x.x.hikari.* or x.x.commons-dbcp2.* are for FINEGRAIN control of properties.
+
+
+CommandLineRunner and ApplicationRunner are basically having run() method WHICH RUN AFTER CONTEXT HAS ALL BEANS CREATED.
+Its to ensure you dont put application logic in main method of mainclass, instead have this as Bean inside the main class.
+
+
+    @Bean
+    CommandLineRunner commandLineRunner(JdbcTemplate jdbcTemplate){ //You can autoinject any bean req
+
+        String QUERY = "SELECT count(*) FROM T_ACCOUNT";
+
+        // Use Lambda expression to display the result
+        return args -> System.out.println("Hello, there are "
+            + jdbcTemplate.queryForObject(QUERY, Long.class)
+            + " accounts");
+    }
+
+ApplicationRunner interface has below method where it HAS ARGUMENTS FROM CMD (Can use LAMBDA INSTEAD to return like above)
+public void run(ApplicationArguments args) throws Exception {
+	// !nonOptionArgs.isEmpty()
+	// nonOptionArgs.get(0)     // Basically gets first argument which ISNT part of like "-jar target/xxx", aka without respective option
+}
+
+
+spring-boot-maven-plugin : This dependency is required for packaging, running, and reloading Spring Boot apps via Maven.
+			   (Eg: executable jar generated which can be executed using java -jar, ca also run using mvn clean package spring-boot:run)
+
+Steps converting spring project to springboot: -
+* Added @SpringBootApplication annotation to main class.
+
+* Use @SpringBootTest instead of regular spring annotations like @ContextConfiguration(classes = {SystemTestConfig.class})
+as while the ContextConfiguration annotation will just include ONLY THE CONFIG CLASS YOU SPECIFY.
+
+The SpringBootTest annotation does 3 things (as told long before):
+
+Load the full application context
+Scan for components and configurations in the current package and subpackages
+- ANY CONFIG inside SAME OR SUBPACKAGE of @SpringBootTest class, IT WILL BE DISCOVERED BY DEFAULT. (DOESNT MATTER main/test folder, all is same!!!)
+- If you MENTION CLASSES AS PARAMS, it will ONLY INCLUDE THOSE and ignore rest (unless there is @Import or @ComponentScan usage in the classes it scans).
+
+@ContextConfiguration:
+Loads ONLY WHAT CLASSES you specify.
+IF you dont specify, checks for DEFAULT CONFIG IN SAME PACKAGE, not subpackages.(aka class annotated with @Configuration OR an XML file EXACTLY named applicationContext.xml)
+
+IMPORTANT: @SpringBootTest DOES NOT AUTOMATICALLY ENABLE AUTOCONFIG (like i incorrectly suspected),
+	   Since main class ALSO was under "package rewards;", the SystemTestConfig PICKS UP THE CLASS AS CONFIG (no class params in test annotation),
+	   And thus enables AutoConfiguration since the @SpringBootApplication (or xxConfiguration) does this unless explicitly excluded.
+
+	   Now thats why it looked like WHEN SPECIFYING CLASSES IN @xxTest annotation it DIDNT ENABLE Autoconfig (and datasource wasnt found),
+	   BUT when no params were given to the test annotation, IT ENABLED, because IT SCANNED MAIN CLASS IN SAME PACKAGE!!!
+
+So remember that by default without any @EnableAutoConfiguration, or @SpringBootApplication which doesnt exclude the autconfig class, 
+Then actually @SpringBootTest DOES NOT DIFFER IN THIS ASPECT like ContextConfiguration. (@SpringBootConfiguration WONT ENABLE THIS!)
+
+So just that @ContextConfiguration only checks the same package for a @Configuration class or applicationContext.xml (otherwise nothing more),
+Is the MAIN DIFFERENCE BETWEEN BOTH! While this is IDEAL FOR UNIT TEST,
+@SpringBootTest is for INTEGRATION TESTS as the BOOT context starts up.
+
+
+@SpringBootApplication on the main class ALSO acts like @SpringBootConfiguration (default main config marker annotation),
+Meaning the SpringApplication.run() CAN HAVE THIS SAME CLASS as it's parameter for configuration.
+
+If NO packages are specified for scanning components, ALL OF THE SAME + SUBPACKAGES classes ARE SCANNED! 
+If you dont supply config or any class to run() in main class, it assumes the same class as the one to be passed (not some weird scanning).
+
+The @SpringBootConfiguration is a marker annotation which is BASICALLY LIKE CONFIGURATION ENTRY POINT,
+Minus the 2 things offered by @SpringBootApplication: @EnableAutoConfiguration and @ComponentScan; Usuall not preferred over the application annotation as main class usually is main config also
+
+Can use this annotation in tests if you want a configuration entry point INSTEAD of main application class,
+Therefore you can avoid loading (for some reason) THE ENTIRE CONTEXT which main class might include by @Import or component scanning, etc.
+Instead here you can control what is scanned.
+
+Locations where jars are stored:
+cp *jdbc-autoconfig/target/*.jar temp (for Maven)
+cp *jdbc-autoconfig/build/libs/*.jar temp (for Gradle)
+
+
+@Order annotation, unlike the STRAIGHTFORWARD @Qualifier annotation, this:
+- is used when injecting a collection (like List<BeanType> or Map<String, BeanType>).
+- It tells Spring in what order to inject or execute those beans.
+- It does not help select a specific bean.
+- Has no effect on single bean injection.
+
+Eg: 
+@Component
+@Order(1)
+public class FirstHandler implements Handler { }
+
+@Component
+@Order(2)
+public class SecondHandler implements Handler { }
+
+@Autowired
+List<Handler> handlers; // Injected as [FirstHandler, SecondHandler]
+
+So it DOES NOT ACT LIKE QUALIFIER, just affects order incase List/Map<String, Bean> is injected.
+
+
+Instead of using the annotation, your bean class CAN ALSO IMPLEMENT Ordered Interface FOR SAME EFFECT!
+public interface Ordered { int getOrder(); }
+
+Infact, @Order DOES NOT GET USED IF Ordered interface is implemented by a bean class!!! (preferred over what annotation @Order says).
+Just implement the method in the class and override, lowest (1) value returned is highest priority.
+
+
+-----------
+
+Spring JPA: -
+ORM Mapping: Maps Java classes to database tables using @Entity.
+Auto Configuration: Spring Boot auto-configures JPA with minimal setup.
+Repository Support: Use JpaRepository for CRUD without writing SQL.
+Query Methods: Supports derived queries, JPQL, and native SQL.
+Transaction Management: Handles commit/rollback automatically.
+EntityManager Access: For custom persistence logic.
+Relationship Mapping: Supports @OneToMany, @ManyToOne, etc.
+Schema Generation: Can auto-create/update DB schema via properties.
+
+spring-boot-starter-data-jpa is the dependency required as starter.
+HIBERNATE WILL BE THE IMPLEMENTATION for this as JPA is just made of interfaces.
+
+WARNING: @EnableJpaRepositories WONT BE NEEDED IF THIS DEPENDENCY IS INCLUDED, UNLESS there are rep. interfaces which
+ARENT IN SAME OR SUBPACKAGES as your main class, then needed.
+	@EnableTransactionManagement IS NOT EVEN NEEDED for default behaviour if this dependency is there!
+
+If jpa is in classpath, springboot AUTOCONFIGURES:
+- DataSource,
+- JpaTransactionManager (remember @Transactional is just marker annotation, THIS BEAN HANDLES THE ACTUAL BEHAVIOUR)
+  Eg: Can be created using EntityManagerFactory object passed as single param to JpaTransactionManager constructor.
+
+- EntityManagerFactoryBean (creates & configures EntityManagerFactory, which inturn builds EntityManager objects,
+	which are like smart helpers that let you save, update, delete, and fetch data as Java objects (handles ORM basically).),
+
+---
+Eg. of EntityManagerFactoryBean WITHOUT SPRING BOOT EASY WAY OF AUTOCONFIG (mostly FYI, not that important):
+@Bean
+public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+	HibernateJpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
+	adapter.setShowSql(true); // Enable SQL logging in the console
+	adapter.setGenerateDdl(true); // Allow Hibernate to auto-generate database schema (DDL)
+	adapter.setDatabase(Database.HSQL); // Set target database type
+	
+	Properties props = new Properties();
+	props.setProperty("hibernate.format_sql","true"); // Format SQL output for better readability
+
+	LocalContainerEntityManagerFactoryBean emfb = LocalContainerEntityManagerFactoryBean();
+	emfb.setDataSource(dataSource);
+	emfb.setPackagesToScan("rewards.internal"); // Packages To Scan for Entities for ORM
+	emfb.setJpaProperties(props);
+	emfb.setJpaVendorAdapter(adapter); // Hibernate Implementation (aka Adaptor) is added as the JPA's actual implementation.
+	
+	return emfb;
+}
+---
+
+In springboot (dont need above code), @Entity is checked in the same package/subpackages by default (as told previously)
+You can OVERRIDE WHERE IT SCANS FOR ENTITIES using @EntityScan("rewards.internal") to specify different BASE package.
+
+Some Properties for jpa:
+spring.jpa.database=default 	     # Springboot will try to select dialect for you, but default is enough as IT CAN FIGURE IT OUT BY ITSELF
+spring.jpa.hibernate.ddl-auto=update # validate, create, create-drop are other legal values. Default val is none (does NOTHING at startup)
+				     # Except for embedded databases, create-drop is default value in this case alone.
+				     # validate - app startup fails if expected db tables format isn't there.
+				     # update - modifies db schema to match entity classes. Adds cols/tables. NO DELETION though.
+				     # create - DROPS AND CREATES schema (DONT MISTAKE AS IF THIS WONT DROP, it will)
+				     # create-drop: One difference from create is IT DROPS ALSO WHEN YOU SHUTDOWN THE APP.
+
+spring.jpa.show-sql=true    	     # Shows the SQL statements executed
+spring.jpa.properties.hibernate.format_sql=true # Formats the SQL to beautify. Any other hibernate property can be access like this.
+
+YES, JPA CAN be used for NO SQL DATABASES ALSO just like RDBMS ones!
+
+Instant Repositories: a feature..just annotate the Interface with @Repository [OR] interface SpringDataCommon's Repository<T,K> (or subtype)
+		      like CrudRepository<T,K>, JpaRepository<T,K> , etc, and define the keys & enable persistence,
+		      Springboot will implement it with CRUD operations support, including paging, custom queries if any, sorting etc.
+
+Annotations for RDBMS entities:
+@Entity - Marks class as a persistence class
+@Table - To specify what table to map this entity into (not mandatory but can use)
+@Id - To mark id field in entity.
+@GeneratedValue(strategy = GenerationType.AUTO) - Helps to specify id field value generation strategy.
+
+Entity annotations for other dbs include : @Document [MongoDB], @NodeEntity [Neo4J] with @GraphId for id field, @Region [Gemfire]
+
+The format for finder methods to just declare in repository interface you create is: [ALWAYS CHECK ENTITY's FIELD NAME MATCHES ALSO,
+					if both conditions fail, then method wont be implemented automatically!]
+find(First)By<DataMemberOfClass><Op>
+<Op> - can be GreaterThan,NotEquals,Between,Like
+Eg: findByOrderDateBetween(Date d1,Date d2)
+
+
+You can also SPECIFY CUSTOM SQL QUERY FOR A finder method. Example:
+@Query("SELECT c FROM Customer c WHERE c.email = ?1")
+public List<Customer> findByEmail(String email); // ?1 is REPLACED BY parameter here
+
+
+Note that JpaRepository<T,ID> extending interface supports WHICH EXTENDING Repository<T,ID> DOESNT SUPPORT:
+- Basic CRUD operations like save(),delete(),findById()
+- Batch operations (like saveAll(), deleteInBatch())
+- Pagination & Sorting
+- Flush operations,
+
+COMMON THINGS BOTH SUPPORT:
+- Finder methods autogeneration if declared
+- Custom queries using @Query can autogenerate when explicit method declaration.
+- Transactional behaviour
+
+Note: @EnableJpaRepositories(basePackages="com.acme.repository") on a config file IS NOT MANDATORY IF the repositories are
+IN SAME OR SUB PACKAGES of where @SpringBootApplication is in.
+
+SpringData implements your repositories AT RUNTIME, creating proxies for injection so at runtime it intercepts method call to interface,
+Gets query custom created and executes using Jpa.
+
+
+Firstly, JpaRepository<T, K> is ideal to be extended by repository interfaces if you want the predefined default operations,
+else the generic Repository<T,K> is better, as INCASE of test, you try injecting Stub* repository CLASSES instead,
+Then remember, whatever predefined methods JpaRepository INTERFACE has, Stub* Repository CLASS MUST IMPLEMENT.
+Usually hibernate will implement those predefined but youre injecting stub repository, so it's UNNECESSARY work for you, so you dont use in that case.
+
+@Entity - Marks class as a JPA persistent entity class.
+@Table(name="T_ACCOUNT") - Specifies exact table name to use from DB (would be class's name if unspecified).
+@Id - Indicates the field to use as the primary key on the database.
+@Column(name="ID") - Identifies column-level customization, such as the exact name of the column on the table. (optional if same name)
+@OneToMany - Identifies the field on the 'one' side of a one to many relationship. (MARKS field as COLLECTION like List<>/Set<>)
+@JoinColumn - Identifies the column on the 'many' table containing the column to be used when joining. Usually a foreign key.
+
+Eg: Here ONE-TO-MANY relationship field is set (this entity's field will be on the "ONE" side, mapping to many Beneficiary entries)
+    the field name (here it's "ACCOUNT_ID") is looked for in the injected datatype's entity (Beneficiary) and is mapped.
+    
+    @OneToMany
+    @JoinColumn(name = "ACCOUNT_ID")
+    private Set<Beneficiary> beneficiaries = new HashSet<Beneficiary>();
+
+Remember: Jpa could POSSIBLY convert simple datatype differences like int and Integer, etc between this entity and other entity's
+same named fields you try to join, but IT SHOULD PRACTICALLY BE SAME TYPE!
+
+
+@AttributeOverride(name="value", column=@Column(name="ALLOCATION_PERCENTAGE"))
+private Percentage percentage; // GETS this variable SET USING REFLECTION!
+
+WARNING: A datatype/class used like above HAS TO BE ANNOTATED WITH EITHER @Entity or @Embeddable in this case (latter is the case here).
+YES THE VALUES HAVE TO BE IN DATABASE. it starts using default constructor but values are assigned by ORM.
+
+@Transient - In this case this annotation ensures while ORM is done, THIS FIELD IS IGNORED.
+	     Saving entity or retreival of this entity from or to db WILL IGNORE THIS FIELD!
+
+In SQL schema, identity keyword in table creation statements like "ID integer identity primary key"
+AUTOINCREMENTS by 1 and saves the value (default behaviour atleast).
+
+
+Remember: spring.sql.init.schema-locations & data-locations is the right property to set in springboot 2.x.x usually. (value is like "classpath:/xxx").
+
+
+Spring MVC (Model/View/Controller): -
+
+2 types of MVC applications: Web Servlet (what we will do, traditional web apps with limited threads/imperative programming style)
+			     Web Reactive (eg: Netty/Undertow server supports this, reactive/functional programming, fewer threads, highly concurrent apps in real time)
+
+Embedded servlet containers are supported by springboot. FAT jar contains even the container required to run springboot web apps from cmd!
+
+spring-boot-starter-web is required for Spring MVC plus Spring Web. It DOES AUTOCONFIGURATION OF:
+DispatcherServlet, default Message Converters, default resource locations (img, css, js, etc), internal config to support controllers, etc.
+
+REST request-response processing lifecycle involves "Dispatcher Servlet" calling a "Message Converter" which converts the JSON/XML to Data/Objects,
+which is how the Controller only deals with receiving and sending requests/responses as Objects while on the outside deals with JSON, XMl, etc.
+
+Warning: @Controller is for Controller classes whose methods/endpoints RETURN VIEWS, NOT JSON/XML!!!
+	 @RestController is the one whose methods return JSON/XML.
+	 BUT annotating @ResponseBody on the methods/CLASS ITSELF in @Controller class is BASICALLY EQUIVALENT TO just using @RestController alone. (so RestController just spares that extra @ResponseBody annotation , ofc you cant use it if you need a method to return a View)
+
+@GetMapping("/data") - specifies suburl for Get endpoint. Use it on class for a GENERAL base path applying to ALL GET requests (not others) in that class.
+@RequestMapping("/api") - same as above except general to ALL requests in controller.
+
+@RequestParam("userid") - This is for param. variable used in controller method, so a url query variable's value with given name is assigned to it. 
+			  Even @RequestParam(value = "userid", required=false) exists to HAVE THIS PARAM AS OPTIONAL (doesn't throw exception unlike the usual case where it will)
+
+@PathVariable("accountId") - Similarly but path variable value is assigned to method param. (both do 'implicit' type conversions decently)
+			     suburl in method annotation should be like @GetMapping("/accounts/{accountId}") to let it know where in url it should take val.
+
+Note: you DONT NEED TO SUPPLY PARAM to above 2 annotations if the variable names in query/suburl_path_var EXACTLY matches java variable name.
+
+@RequestHeader("user-agent") - Gets the header received mapped to the method param variable you annotate this on.
+
+The methods in controller CAN have ANY PARAMETERS which is available in Servlet Api like: Principal, HttpSession, Locale, HttpServletRequest, etc.
+
+Except Protobuf (protocol buffers), springboot sets up everything else like XML conversions and JSON (using Jackson, gson for json too possible), form-based data, Byte[], String, BufferedImage, etc. google protocol buggers require 3rd party libraries on classpath for this to convert.
+
+ResponseEntity (Subclass of HttpEntity):
+You can return ResponseEntity<> instead for more control like sending status codes, SETTING RESPONSE HEADERS, content type etc.
+
+Eg: ResponseEntity<String> response = ResponseEntity.ok()
+					.contentType(MediaType.TEXT_PLAIN) //Sets the Content-Type header to let client know format of response
+					.lastModified(System.currentTimeMillis()) // Sets Last-Modified header with 'long' type value
+					.body("Hello Spring");
+
+.contentType(MediaType.APPLICATION_JSON) is OPTIONAL if you use @RestController, as SpringBoot WILL SET THAT HEADER AUTOMATICALLY as application/json.
+
+
+WAR file ARE NOT selfcontained ;like JAR files are, as they require external container to run it unlike JAR (fat jar) which can have everything required and run in cmd alone! To run as WAR file, you have to do this to main class as below :
+
+//EXTEND main class WITH SpringBootServletInitializer and implement below method
+protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+	return application.sources(Application.class);
+}
+
+The main method with SpringApplication.run(Application.class, args) CAN EXIST ALONG WTH ABOVE METHOD ALSO! IF BOTH ARE THERE,
+Then while running as JAR, main method is used, when running WAR file, above method is used. that's all. Ensure that tomcat dependencies versions are compatible with the tomcat server version (if using tomcat as external server) in case of WAR. Same fat and thin WARs will be generated.
+
+spring-boot-devtools (in org.springframework.boot) dependency can make development EASIER by HOT restarting application,
+instead of cold restarting from the start EVERYTIME YOU MAKE A CHANGE TO A CLASS/ON RECOMPILING.
+Use <scope>runtime</scope> (tells maven this is only for runtime, NOT for compile time dependency so it can ignore for build as not needed),
+and <optional>true</optional> (tells maven that this dependency is NOT required by downstream projects, aka projects which take this project's POM as a parent to it, etc., besides you dont want this for production build)
+
+
+<parent>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-parent</artifactd>
+	<version>2.7.5</version>
+</parent>
+
+This parent can be added which serves 4 purposes: 
+* Centralizes dependency versions without need to specify versions individually.
+* Applies sensible defaults for compiler settings, encoding, plugin versions, etc.
+* Manages plugin configurations: Like spring-boot-maven-plugin for packaging your app.
+* Supports BOM (Bill of Materials): Ensures consistent versions across dependencies.
+
+spring-boot-maven-plugin can be added to <plugins> as a <plugin> artifact so it can package and make FAT executable jars for mvn command to execute springboot directly also.
+
+server.port=8088 # if not specified, 8080 is default
+server.servlet.session.timeout=5m
+
+
+spring-boot-starter-mustache : Dependency which adds support for Mustache template engine, renders .mustache template files for HTML views in controller.
+
+If a dependency is a jar file/packaged project inside same repo/parent project, then you HAVE to ensure that is build and jar is generated first.
+Then only other projects which import that subproject will work. (like just do mvn clean install, it works atleast)
+IMPORTING A SUBPROJECT INTO ANOTHER SUBPROJECT IS SIMPLE, no extra steps. In root component body of pom.xml,
+you specify <artifactId>, and maybe <groupId> right? That is enough, just import using these as <dependency> in the other subproject!!
+
+Any PUBLIC classes, interfaces, beans, configuration, resources, AND TRANSITIVE dependencies declared in that subproject WILL BE INCLUDED! (No Source code ofcourse)
+
+
+REST (Representational State Transfer) usually doesn't use HttpSession, as REST is supposed to be Stateless, forcing client to maintain state.
+Jakarta EE (successor of Java EE, basically javax.* to jakarta.*) is a collection of APIs and specifications for building scalable, secure, and transactional enterprise apps. It covers everything from web services, servlets, and REST APIs to dependency injection, security, and persistence. But Spring MVC DOES NOT IMPLEMENT JAX-RS.
+
+RestTemplate is used to build Rest clients in java.
+
+@RequestMapping is generic annotation which can be equivalent to the composite annotation '@GetMapping(path="xxx")' by
+@RequestMapping(path="xxx", method=RequestMethod.GET)
+
+All enumerators are: GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS,TRACE (for these last 3, there aren't composite Mapping annotations separately)
+
+PUT changes body of existing entity in 1 shot (giving null in some other field WILL SET IT AS NULL typically), where PATCH is ideally for changing one field alone.
+
+Http Status Codes: 200 OK, 30x (Redirects), 4xx Client error (like 404 Not Found), 5xx Server Error (like 500 Internal Server Error)
+		   201 CREATED sucessfully (sends back constructed url as "location" header, pointing to resource created), 405 HTTP method not supported,
+		   406 Cannot generate Response Body in requested format, 415 Req body NOT supported.
+
+@ResponseStatus(HttpStatus.NO_CONTENT) - If annotated on controller method, Then sends back with given status code.
+					(instead of returning ResponseEntity<> as that can set response headers, etc additionally than this)
+
+Note: If method is void, it sends back EMPTY BODY with given response code, aka 204 No Content.
+
+@RequestBody - Annotate this ON THE CONTROLLER METHOD PARAM for PUT/POST to get the Request Body sent as an object.
+	      (Can take from JSON/XML sent to endpoint BASED ON Content-Type header sent AUTOMATICALLY)
+
+Warning: ResponseEntity<Void> is returned by controller method IF THERE IS NO CONTENT TO RETURN BUT JUST STATUS CODE ALONE!
+
+UriComponentsBuilder        : Allows Explicitc creation of URI, requires hardcoded URLs.
+ServletUriComponentsBuilder : Subclass of UriComponentsBuilder, which provides access to URL THAT INVOKED CURRENT CONTROLLER METHOD!
+
+Eg: URI location = ServletUriComponentsBuilder.fromCurrentRequestUri() //takes currently called controller method url
+			.path("/{itemId}") //Adds "/{itemId}" to whatever URL this contr. method is called through
+			.buildAndExpand("item A") // Substitutes the placeholder Path Variable (WARNING: space becomes %20 when converted)
+			.toUri();
+ResponseEntity.created(location).build();
+
+RestTemplate: 
+
+Creating RestTemplate using new keyword is fine for normal configuration, BUT IF YOU HAVE PROPERTIES to be used to modify default props,
+you can EITHER change in code itself OR properties file:
+
+Eg: @Bean
+public RestTemplate restTemplate(RestTemplateBuilder builder) {
+    return builder
+        .setConnectTimeout(Duration.ofSeconds(3))
+        .setReadTimeout(Duration.ofSeconds(5))
+        .defaultHeader("Accept", "application/json")
+        .build();
+}
+
+OR
+
+# Below properties are optional and used by RestTemplateBuilder, SO builder.build() ALONE IS ENOUGH INSTEAD OF ABOVE CODE !
+# Set timeouts (in milliseconds), set a root URI for all requests, Set basic auth credentials
+spring.rest.template.request-factory.connect-timeout=5000
+spring.rest.template.request-factory.read-timeout=10000
+spring.rest.template.root-uri=https://api.example.com
+spring.rest.template.basic-auth.username=myuser
+spring.rest.template.basic-auth.password=mypass
+
+
+RestTemplate methods: - ("uri" string can have {orderId} path variable, pojo object itemObj here should minimum satisfy these requirements: A public no-arg constructor, all fields getters and setters, serializable fields)
+
+Items[] items    = template.getForObject(uri, Items[].class, "1")  [Gets all items of order id 1]
+URI itemLocation = template.postForLocation(uri, itemObj, "1") [Basically POST for 201 CREATED]
+ResponseType ack = template.postForObject(uri, itemObj, ResponseType.class, "1") [Basically POST but gets and returns an acknowledgement response as java obj (from json/xml)]
+ResponseType ack = template.patchForObject(uri, itemObj, ResponseType.class, "1") [similar to postForObject as above]
+		   template.put(uri, itemObj, "1") [PUTs the item obj modified values for item with id "1"]
+		   template.delete(uri, "1") [Deletes the given item]
+HttpHeaders hdrs = template.headForHeaders(url, "1") [retrieves only the headers, no body.Check metadata like Content-Type, Content-Length]
+Set<HttpMethod> allowedMethods = template.optionsForAllow(url, "1") [FOR GIVEN ENDPOINT, WHAT HttpMethod is allowed or not it fetches]
+
+Same way as above, getForEntity() instead returns ResponseEntity<...>, basically same obj but inside ResponseEntity.
+Use responseEntity.getBody() to get obj,  response.getHeaders.getxxx() to fetch header values, .getStatusCode() returns HttpStatus.OK / etc.
+
+ResponseEntity<Void> response = restTemplate.exchange(request, Void.class);
+
+To use above metod, you can create as follows the request obj:
+RequestEntity<Item> request = RequestEntity.post(new URI(itemUrl))
+					.getHeaders().add(HttpHeaders.AUTHORIZATION,
+						"Basic "+base64EncodedLoginData)
+					.contentType(MediaType.APPLICATION_JSON)
+					.body(newItemObj);
+
+Ideally WebClient is preferred in cases of Streaming , and may evolve compared to RestTemplate, which wont, but that DOESN'T mean IT's depreciated.
+
+The trailing variable params, last param(s) end of each restTemplate method like getForObject, postForObject, etc, CAN TAKE STRING of that val,
+OR the datatype meant to be used also (like Integer, or just the number as it will autobox), as the values to be substituted
+in the uri's "/{id}" part. Actually any type with a proper .toString() implementation WILL WORK apparently!
+
+For static rendering of resources in webapp, springboot looks in "classpath:static", basically static folder in resources folder,
+BUT IT WILL LOOK FIRST IN src/main/webapp if such a path exists!
+
+Spring boot also CONVENIENTLY MAPS "/" endpoint to the index.html which SHOULD BE IN main/resources/static OR main/resources/public folders.
+
+RestTemplate methods THROW Exceptions IF STATUS CODE IS NOT 2xx.
+
+assertThrows RETURNS THE EXCEPTION IT EXPECTS TO BE THROWN (and if it is thrown, else it throws its own ERROR - AssertionFailedError) :
+HttpClientErrorException exp = assertThrows(HttpClientErrorException.class,()->{...});
+
+Exception handling in Controller involves the @ExceptionHandler annotation, where if any controller method throws specified exception,
+This method runs and that exception is a parameter to this. Eg:
+
+@ResponseStatus(HttpStatus.CONFLICT) //Returns 409 status without the method to even return anything.
+@ExceptionHandler({ DataIntegrityViolationException.class }) //This exception can occur if while saving to db some constraint is violated (like unique)
+public void handleAlreadyExists(Exception ex){...}
+
+
+Spring Boot Testing Framework (Built on top of Spring Testing Framework): - (spring-boot-starter-test dependency required (<scope> as test))
+
+Eg of annotations: @SpringBootTest,@WebMvcTest,@WebFluxTest,@DataJpaTest,@DataJdbcTest,@JdbcTest,@DataMongoTest,@DataRedisTest
+@MockBean annotation helps to mock specific bean.
+
+Dependencies inside starter dependency: JUnit(5),SpringBootTest,SpringTest,AssertJ,Mockito,JSONassert,JsonPath,Hamcrest(library of matcher)
+
+webEnviroment option in @SpringBootTest annotation can be set to RANDOM_PORT / DEFINED_PORT (server.port prop it finds it uses)
+TO START WEB SERVER !
+MOCK (default, NO REAL webserver started, only mocked using MockMvc) and NONE (no web env) are the other options
+
+WARNING: Simply using @SpringBootTest (which itself is optional while using @Test methods) WILL NOT START THE EMBEDDED WEB SERVER/CONTAINER. Only app and app context will be ready.
+	 You need to use this annotation to ensure it does start, or app is running in another terminal/etc :
+	 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+
+
+TestRestTemplate bean is always configured if SpringBootTest annotation is there.
+Difference between this and RestTemplate is:
+* It takes a relative path instead of mandatory absolute path
+* Fault Tolerant: It does NOT throw an exception when an error response like 404 occurs from server.
+* Configured to ignore cookies and redirects.
+
+TestRestTemplate CAN ALSO BE MODIFIED by RestTemplateBuilder (autoconfigured in tests too, so can inject directly) as shown before.
+Create a normal restTemplate USING BUILDER, and PASS IT TO CONSTRUCTOR. Eg: new TestRestTemplate(restTemplate)
+
+
+Mvc test framework does NOT NEED to run web server container to test the controller endpoints!
+
+For MOCK option value:
+@SpringBootTest(webEnvironment = WebEnvironment.MOCK)
+@AutoConfigureMockMvc //on test class these both should be used, can inject MockMvc bean directly
+
+Code should be like: (mock server, not a real one)
+     mockMvc.perform( get("/api/user/{id}" , "1").accept(MediaType.APPLICATION_JSON)) // Can use URI substitution like restTemplate methods
+               .andExpect(status().isOk())                                 // Checks HTTP 200
+               .andExpect(content().contentType(MediaType.APPLICATION_JSON)) // Checks response is JSON
+               .andExpect(jsonPath("$.name").value("Alice"))              // Checks JSON field "name" is "Alice"
+               .andExpect(header().string("X-Custom-Header", "value"));   // Checks custom header is present
+
+// .perform() returns MockHttpServletRequestBuilder, which we can chain methods with like this.
+// Required static imports for these is org.springboot.test.web.servlet.request.MockMvcResultBuilders.get; and xxx.request.MockMvcResultMatchers.status;
+
+Other methods of MockMvc to chain from like get()/put()/post(), all INSIDE perform() as 1 parameter:
+
+.param("id", "42")                      // Adds a query parameter ?id=42 to the request, instead can directly substitute in get() 2nd param too.
+.requestAttr("userRole", "admin")      // Sets a request attribute accessible in the controller
+.header("Authorization", "Bearer xyz") // Adds an HTTP header to the request
+.content("{\"name\":\"Alice\"}")       // Sets the raw request body content (e.g., JSON payload)
+.contentType(MediaType.APPLICATION_JSON) // Declares the format of the request body as JSON
+.accept(MediaType.APPLICATION_JSON)    // Tells the server the client expects a JSON response
+.locale(Locale.ENGLISH)                // Sets the request's locale (used for i18n or formatting)
+
+Below static methods are to be used inside each .andExpect() as 1 parameter, which itself is chained to perform: (can chain .andExpect() with another, perform() only 1 should be there)
+
+content().string("Hello World")                 // Asserts that the response body is exactly "Hello World"
+header().string("Content-Type", "application/json") // Asserts that the response has a header Content-Type with value application/json
+status().isOk()                                 // Asserts that the response status code is 200 OK
+xpath("/user/name").string("Alice")            // Asserts that the XML response has <name>Alice</name> at the given XPath
+jsonPath("$.user.name").value("Alice")         // Asserts that the JSON response has "user.name" equal to "Alice"
+
+
+Difference between TestRestTemplate and MockMvc: TestRestTemplate DOES need startup of a REAL embedded SERVER using REAL http calls,
+		   Whereas MockMvc does In-memory simulation via DispatcherServlet. MockMvc is ideal only for Controller Slice Tests, not exactly unit test or integration but inbetween somewhat.
+
+
+.andDo(print())                      		   // Logs the full request and response details to the console for debugging
+.andDo(result -> assertTrue(result.getResponse()
+	.getContentAsString().contains("Alice"))) // Executes custom logic after the request, useful for advanced assertions or side effects
+
+.andReturn()              // Eg: MvcResult r = perform(...).x.x.x.andReturn();  // Returns the MvcResult object so you can inspect the response manually (e.g., extract body, headers, status)
+
+Note: Basically andDo lets you access MvcResult object (above eg. shows result variable) which you can use to inspect response/request,
+      BUT if you wanted to stop for now and check in further lines, you can instead end the parent level chaining with .andReturn(); ,
+      which will return MvcResult obj. In later lines, you can do SAME THING YOU COULD'VE DONE INSIDE andDo() example as above!
+
+
+@WebMvcTest(MyController.class)       // Web slice testing: loads only web layer (controllers, filters, etc.) for fast controller testing
+
+Disables FULL autoconfiguration and instead apply ONLY configuration relevant to MVC tests OF GIVEN CONTROLLER CLASS.
+(aka controllers, filters, exception handlers, and related config & beans OF Controller.class you pass as param to the annotation!)
+
+MockMvc bean (as seen before) is autoconfigured, and optionally Spring Security too.
+
+@MockBean is used to mock & inject any other beans you will need which ISNT part of the mvc like service class beans etc.
+
+given(userService.getUserName(1L)).willReturn("Alice"); // When getUserName(1L) is called, return "Alice"
+verify(userService).getUserName(1L);			// Verifies that getUserName(1L) was called once, can have another verify() parameter where you can give times(2) or atMost(3) or never(), etc.
+
+Warning: @Mock from Mockito creates a bean which is NOT PRESENT OR MANAGED IN SPRINGBOOT CONTEXT. Like inside controller,
+if i injected a bean i want to mock there, by executing controller method in test I CANT CHANGE THAT INJECTION, so @MockBean springboot annotation is needed.
+
+
+@DataJpaTest                          // Repository slice: loads JPA repositories and related config for testing database access
+
+Loads @Repository beans, excludes all other @Components. Autoconfigures TestEntityManager, an alternative to EntityManager (for helper methods alone for entity management during testing like persistAndFlush() or persistFlushFind())
+
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) //Used on test class to say basically: "use configured db in properties file". IF YOU OMIT THIS ANNOTATION OR just use .ANY option instead, it will assume you want a lightweight IN-MEMORY db for testing purposes.
+
+
+@CacheTest                    // Caching slice: loads only caching-related beans to test cache behavior and configuration (like CacheManager)
 
 
 
@@ -1151,6 +1946,7 @@ If you REALLY WANT TO COMMIT @Test method changes, NOT rollback, then:
 
 ---------------------------------------------------
 ==================================================
+
 NOTES: -
 * Springboot scans and takes default/no param constructor if multiple are there, one is there means it takes that constructor. Else it raises error.
 
