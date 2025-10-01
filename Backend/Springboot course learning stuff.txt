@@ -122,7 +122,8 @@ public TransferService transferService(AccountRepository){
 
 If TransferServiceImpl is annotated as some bean annotation, then since no other type other than this extends TransferService,
 Spring automatically will inject this where TransferService interface type is used.
-If multiple contenders, then @Qualifier should be used on the one you want it to be injected with.
+If multiple contenders, then @Qualifier should be used on the one you want it to be injected with unlike @Primary.
+@Qualifier("xxxService") is used AT THE INJECTION POINT to clarify among various contenders (OVERRIDES @Primary easily).
 
 Incase there is cyclic dependency and cant be resolved design wise, then use @Lazy like:
 
@@ -1855,10 +1856,12 @@ WARNING: Simply using @SpringBootTest (which itself is optional while using @Tes
 	 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 
 
-TestRestTemplate bean is always configured if SpringBootTest annotation is there.
+TestRestTemplate bean is always configured if SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT OR .DEFINED_PORT) annotation is there.
+[.MOCK (the default val) and .NONE values DO NOT RUN A REAL SERVER, HENCE TestRestTemplate CANNOT BE INJECTED in test class]
 Difference between this and RestTemplate is:
 * It takes a relative path instead of mandatory absolute path
-* Fault Tolerant: It does NOT throw an exception when an error response like 404 occurs from server.
+* Fault Tolerant: It does NOT throw an exception when an error response like 4xx or 5xx occurs from server.
+  		  (Except malformed urls (IllegalArgumentException) and unreachable hosts (ResourceAccessException))
 * Configured to ignore cookies and redirects.
 
 TestRestTemplate CAN ALSO BE MODIFIED by RestTemplateBuilder (autoconfigured in tests too, so can inject directly) as shown before.
@@ -1872,7 +1875,7 @@ For MOCK option value:
 @AutoConfigureMockMvc //on test class these both should be used, can inject MockMvc bean directly
 
 Code should be like: (mock server, not a real one)
-     mockMvc.perform( get("/api/user/{id}" , "1").accept(MediaType.APPLICATION_JSON)) // Can use URI substitution like restTemplate methods
+     mockMvc.perform( get("/api/user/{id}" , "1").accept(MediaType.APPLICATION_JSON)) // Can use URI substitution like restTemplate methods; post(), put(), even head(), patch(), options() [all 8] are supported
                .andExpect(status().isOk())                                 // Checks HTTP 200
                .andExpect(content().contentType(MediaType.APPLICATION_JSON)) // Checks response is JSON
                .andExpect(jsonPath("$.name").value("Alice"))              // Checks JSON field "name" is "Alice"
@@ -1886,19 +1889,24 @@ Other methods of MockMvc to chain from like get()/put()/post(), all INSIDE perfo
 .param("id", "42")                      // Adds a query parameter ?id=42 to the request, instead can directly substitute in get() 2nd param too.
 .requestAttr("userRole", "admin")      // Sets a request attribute accessible in the controller
 .header("Authorization", "Bearer xyz") // Adds an HTTP header to the request
-.content("{\"name\":\"Alice\"}")       // Sets the raw request body content (e.g., JSON payload)
+.content("{\"name\":\"Alice\"}")       // Sets the raw request body content (e.g., JSON payload), if endpoint expects json, like @RequestBody var.
 .contentType(MediaType.APPLICATION_JSON) // Declares the format of the request body as JSON
 .accept(MediaType.APPLICATION_JSON)    // Tells the server the client expects a JSON response
 .locale(Locale.ENGLISH)                // Sets the request's locale (used for i18n or formatting)
 
-Below static methods are to be used inside each .andExpect() as 1 parameter, which itself is chained to perform: (can chain .andExpect() with another, perform() only 1 should be there)
+Below static methods are to be used inside 1 .andExpect() each, which itself is chained to perform: (can chain .andExpect() with another, perform() only 1 should be there)
 
-content().string("Hello World")                 // Asserts that the response body is exactly "Hello World"
+content().string("Hello World")                   // Asserts that the response body is exactly "Hello World"
+content().contentType(MediaType.APPLICATION_JSON) // asserts response contentType is json
 header().string("Content-Type", "application/json") // Asserts that the response has a header Content-Type with value application/json
-status().isOk()                                 // Asserts that the response status code is 200 OK
+header().string("Location", "http://localhost:8080/accounts/21") // For checking location header.
+status().isOk()                                 // Asserts that the response status code is 200 OK. isCreated, isNotFound(), isNoContent() are others.
 xpath("/user/name").string("Alice")            // Asserts that the XML response has <name>Alice</name> at the given XPath
 jsonPath("$.user.name").value("Alice")         // Asserts that the JSON response has "user.name" equal to "Alice"
+jsonPath("$..name").value("Alice")	       // Asserts if EVERY OCCURENCE IN ANY RECURSIVE DEPTH LEVEL OF RESPONSE JSON has "Alice" as value.
+jsonPath("$[0].name").value("Alice")	       // Asserts first json of LIST 's name property as "Alice".
 
+Note: jsonPath string param "$.user" and just "user" would be IDENTICAL, BUT "$.user.name" IS NOT SAME AS "user.name" (former is correct), since it will assume the context is already in the node "user", so ONLY for 1st level access, both syntax work the same.
 
 Difference between TestRestTemplate and MockMvc: TestRestTemplate DOES need startup of a REAL embedded SERVER using REAL http calls,
 		   Whereas MockMvc does In-memory simulation via DispatcherServlet. MockMvc is ideal only for Controller Slice Tests, not exactly unit test or integration but inbetween somewhat.
@@ -1924,8 +1932,16 @@ MockMvc bean (as seen before) is autoconfigured, and optionally Spring Security 
 
 @MockBean is used to mock & inject any other beans you will need which ISNT part of the mvc like service class beans etc.
 
-given(userService.getUserName(1L)).willReturn("Alice"); // When getUserName(1L) is called, return "Alice"
-verify(userService).getUserName(1L);			// Verifies that getUserName(1L) was called once, can have another verify() parameter where you can give times(2) or atMost(3) or never(), etc.
+To add MOCK BEHAVIOUR TO @MockBean injected object in test class:
+given(userService.getUserName(1L)).willReturn("Alice"); // When getUserName(1L) is called, return "Alice".
+given(userService.getUserName(anyLong())).willReturn("Alice"); //to accept any long
+given(userService.getUserName(any(Long.class))).willReturn("Alice"); //GIVEN DATATYPE value is accepted,
+								     //OR alternatively use just any() FOR ANYTHING to be accepted!
+given(...).willThrow(new Exception()); //similar to willReturn except it throws given exception obj. 
+
+verify(userService).getUserName(1L);  // Verifies that getUserName(1L) was called once, can have 2nd param for verify() call to specify times(2) or atMost(3) or never(), etc. (frequency of calling)
+
+verify(userService).getUserName(any(Long.class)); // or the other anyXXX() methods you see above CAN BE USED HERE SIMILARLY for more generalized matching.
 
 Warning: @Mock from Mockito creates a bean which is NOT PRESENT OR MANAGED IN SPRINGBOOT CONTEXT. Like inside controller,
 if i injected a bean i want to mock there, by executing controller method in test I CANT CHANGE THAT INJECTION, so @MockBean springboot annotation is needed.
@@ -1937,12 +1953,276 @@ Loads @Repository beans, excludes all other @Components. Autoconfigures TestEnti
 
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) //Used on test class to say basically: "use configured db in properties file". IF YOU OMIT THIS ANNOTATION OR just use .ANY option instead, it will assume you want a lightweight IN-MEMORY db for testing purposes.
 
-
 @CacheTest                    // Caching slice: loads only caching-related beans to test cache behavior and configuration (like CacheManager)
 
 
+Spring Security : - (Portable, Separations of Concern, Flexible)
+Principal: User, device or system that is contacting api and performing an action
+
+Authentication: Establishing principal's credentials are valid
+
+Examples of auth mechanisms: Basic, Digest, Form, OAuth2.0/OIDC, X.509. Can store credentials in a external (or inmemory for dev) db or Lightweight Directory Access Protocol (LDAP) storage in cloud to authenticate by sending there the credentials to get verified.
 
 
+Authorization: Deciding if a principal is allowed to access a resource.
+
+Authority: Permission or credential enabling access (such as role)
+
+
+All secured resources (as configured) will have to be accessed by execution thread through SecurityContext.
+
+AuthenticationManager checks for Valid credentials, if found to be correct, 
+Then this will ADD the Principal and Authorities to the SecurityContext (SecurityContext will be EMPTY BEFORE THIS)
+
+BUT BEFORE ACCESSING SecuredResources,  there is a "Security Interceptor",
+which will send these information to AuthorizationManager (to check if this user has access to this resource), then lets you access.
+
+3 Steps for Spring Security: -
+* Defining Filter chain
+
+  DelegatingFilterProxy bean is autoconfigured by SpringBoot and is required for this filterchain.
+  ALL THIS APPENS INSIDE THE SERVLET CONTAINER.
+  The request first goes into the DelegatingFilterProxy bean, which redirects to springSecurityFilterChain,
+  where there is implementation consists of many spring configured filters, and it goes through from 1 to N of all filters,
+  Then only only goes to DispatcherServlet and so on.
+  
+  NOW Response GOES BACK THE SAME ROUTE FROM DispatcherServlet back to user! (coz They might modify response headers, log/audit, handle exceptions, clean up resources, etc)
+
+Basic Path of what happens overall: -
+
+Request enters servlet container → DelegatingFilterProxy → springSecurityFilterChain → AuthenticationManager checks credentials,
+SecurityContext gets filled with Principal + Authorities → FilterSecurityInterceptor checks with AuthorizationManager if user can access resource,
+request goes to DispatcherServlet → controller runs → response comes back through same filters in reverse → out to user.
+
+[Note: FILTERS ARE RUN IN REVERSE ORDER IN RESPONSE PATH, And authentication & Authorization Managers are NOT REPEATED AGAIN!]
+
+The Spring Security Filters can have more, but usual basic filters are:
+* SecurityContextPersistenceFilter - Establishes/Finds SecurityContext in session to set for current thread, to maintain between HTTP requests.
+* LogoutFilter - Clears SecurityContextHolder when logout requested.
+* UsernamePasswordAuthenticationFilter - Puts Authentication into SecurityContext on login request
+* ExceptionTranslationFilter - Converts SpringSecurity exceptions into HTTP response or redirect.
+* AuthorizationFilter - Authorizes web requests based on config attributes and authorities.
+
+Remember: Not all of these filters always no something, like in some cases literally SecurityContextPersistenceFilter and AuthorizationFilter run.
+
+IF DEFAULT SECURITY SETUP enabled, SpringBoot Security sets up a SINGLE IN-MEMORY USER called "user",
+AUTOGENERATES a UUID password. Relies on Spring Security's content-negotiation strategy to determine whether to use httpBasic or formLogin.
+ALL URLs REQUIRE A LOGGED-IN USER!
+
+
+
+Configure the FilterChain and the AuthenticationManager (indirectly) by configuring these 2 beans like below (AuthenticationManager asks UserDetailsService for the details, thats why i say this configures that) : -
+
+// BELOW CODE USES "Ant-style" pattern matching for the suburls
+// "/admin/*" would match ONLY suburls like "/admin/xxx" (i.e /admin should be direct parent)
+// "/admin/**" will match ANY SUBURL with ANY DEPTH as long as it starts with "/admin/" (yes, the 2nd slash is hardcoded in this example so it's required, i.e "/admin" WONT be matched by this. for that you need "/admin**" then it will match anything after /admin)
+
+@Bean
+public SecurityFilterChain filterChain(HttpSecurity http){
+    http.authorizeHttpRequests(
+        (authz) -> authz
+	    .requestMatchers("/public/**").permitAll()       // Anyone can access /public/...
+	    .requestMatchers("/secret/**").denyAll()	     // Denies ALL requests to this suburl
+            .requestMatchers("/admin/**").hasRole("ADMIN") // Only users with ADMIN role can access any /admin/... URL
+            .requestMatchers(HttpMethod.PUT,"/accounts/edit*").hasRole("ADMIN") // Only ADMINs can perform PUT on /accounts/edit...
+            .requestMatchers("/accounts/**").hasAnyRole("USER","ADMIN") // USER or ADMIN can access any /accounts, can use/... URL
+            .anyRequest().authenticated()); // All other requests require authentication (any logged-in user)
+
+	   //All the permitAll,denyAll,hasRole,authenticated, etc. can be used (mix & matched) with anyRequest and requestMatchers ALSO!
+}
+
+Warning: There are NO PREDEFINED ROLES in spring security. Following methods are DEPRECIATED (requestMatchers is the replacement):
+.antMatchers("/admin") [only matches /admin] and .mvcMatchers("/admin") [matches /admin, /admin/]
+
+Below is a way to BYPASS FilterChain COMPLETELY for some endpoints: [.permitAll() STILL MEANS IT PASSES THROUGH FILTER CHAIN, so this is better for less overhead]
+
+@Bean
+public WebSecurityCustomizer webSecurityCustomizer(){
+	return (web) -> web.ignoring().requestMatchers("ignore1", "/ignore2"); // THESE URLs ARE NOT CHECKED if specified like this
+}
+
+
+Spring Security Authentication Flow: - (More detailed beans/objects than previous depiction, <<XXX>> denotes interface type)
+
+Http request -> BasicAuthenticationFilter				  [Creates Authentication type object with EXTRACTED username & password]
+	      ( <<Authentication>> UsernamePasswordAuthenticationToken )
+	
+	     -> ProviderManager (of type <<AuthenticationManager>>)  --provides--> <<AuthenticationProvider>> impls like DaoAuthenticationProvider.		
+	     -> calls loadUserByUsername() method of a <<UserDetailsService>> implementation (This happens ONLY in the case of 					DaoAuthenticationProvider alone). Retrieves user-related data from identity store. Fetches from either:
+			* In memory User defined details (InMemoryUserDetailsManager)
+			* Relational DB tables (JdbcUserDetailsManager)
+			* LDAP directory queries (LdapUserDetailsService) to use Ldap identity store
+			* Custom logic to fetch (CustomUserDetailsService, implement your own loadUserByUsername() method)
+
+	     -> The UserDetails object is returned by UserDetailsService impl, which goes back THE SAME ROUTE IT CAME (aka first to 				DaoAuthenticationProvider , then back to the ProviderManager (which is impl of AuthenticationManager) and back to 				BasicAuthenticationFilter.
+
+		Now this filter populates the SecurityContext with this object, where this obj ALSO HAS THE AUTHORITIES ASSOCIATED WITH THE USER.
+
+
+Other AuthenticationProvider types than Dao: Ldap, OpenID, RememberMe, etc.
+
+Note: InMemoryUserDetailsManager IMPLEMENTS << UserDetailsService >> AND << UserDetailsManager >>,
+has SAME PLUS MORE FUNCTIONS than InMemoryUserDetailsService like: createUser,updateUser,deleteUser,changePassword,userExists
+
+Below way can be used to define the Bean to provide UserDetailsService IN-MEMORY implementation (ideal only for development/local env):
+
+@Bean
+public InMemoryUserDetailsManager userDetailsService(){
+	UserDetails user = User.withUsername("user").password(passwordEncoder.encode("user")).roles("USER").build();
+	UserDetails admin = User.withUsername("admin").password(passwordEncoder.encode("admin")).roles("ADMIN").build();
+	
+	//Supply UserDetails objects to a MANAGER's constructor, called InMemoryUserDetailsManager()
+	return new InMemoryUserDetailsManager(user, admin); // put all the UserDetails objects (users/roles) you want as parameters.
+}
+
+@Bean public UserDetailsManager userDetailsManager(){ return new JdbcUserDetailsManager(dataSource); }
+
+Basically order of inheritance: <<UserDetailsService>> <-implements- JdbcDaoImpl (has read only functions: getting username password, and authorities of users),
+<-extends- JdbcUserDetailsManager (also implements <<UserDetailsManager>>)
+
+Queries RDBMS (overridable) for users and authorities (like "SELECT username,password,enabled FROM users" or "SELECT username,authority FROM authorities"). Groups are also supported (tables like group, group_members, group_authorities).
+
+
+2 ways for Custom Authentication:
+* Implementing UserDetailsService interface : UserDetails loadUserByUsername(String username) throws UsernameNotFoundException;
+OR
+* Implementing AuthenticationProvider interface: Authentication authenticate(Authentication authentication) throws AuthenticationException;
+						 boolean supports(Class<?> authentication);
+
+PassworkEncoders are used to hash passwords to store in DBs (one way unlike encrypt/decrypt).
+MD5PasswordEncoder and SHAPasswordEncoder ARE DEPRECIATED (they are broken now).
+BCryptPasswordEncoder is currently recommended.
+
+Eg: To use passwordEncoder in statement like: User.withUsername("user").password(passwordEncoder.encode("user")).roles("USER").build();
+    
+    PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+   //as bcrypt is current default, "{id}pswd" is the format, where id is the pswd encoder used. Eg: {bcrypt}$2r4fsff...    
+
+HttpSecurity obj has MORE methods than just authorizeHttpRequests.
+
+@Bean
+public SecurityFilterChain filterChain(HttpSecurity http){
+    http.authorizeHttpRequests(
+        	(authz) -> authz.requestMatchers("/admin/**").hasRole("ADMIN")
+			   ...
+            	   	   .anyRequest().authenticated())
+	
+	.httpBasic(withDefaults()) // ENABLES HTTP BASIC AUTH (Browser prompts for username & password)
+
+	/* 	ExceptionTranslationFilter will intercept any request WITHOUT HEADER having credentials, and SEND BACK 401,
+		with a response header "WWW-Authenticate: Basic". Browser understands this exactly means it shows a small
+		native dialog box asking for username and password. Once submitted, "username:password" is formatted so and encoded
+		using Base64, and request is resent with header "Authorization: Basic base64EncodedCredentials".
+	*/
+				      
+
+	[OR]
+
+	.formLogin( form -> form.loginPage("/login")   // Sets up form-based auth, the given url is used when login needed
+				.permitAll() 	     ) // Any user can access
+
+	/*	ExceptionTranslationFilter intercepts any unauthenticated request, and redirect the browser to the login page
+		(`/login`). The user fills out a form and POSTs credentials to `/login`. Upon submitting to POST "/login", a session
+		is created, a `JSESSIONID` cookie is sent to the browser, and the user is redirected to the original requested URL.
+		A simple DEFAULT /login page will be created too IF YOU DONT SPECIFY login page, like .formLogin(withDefaults()).
+
+		WARNING: the JSESSIONID cookie which is sent as response header "Set-Cookie" IS NOT LIKE A TOKEN, it will maintain
+		a session, WHETHER of a user or anonymous, that's all. BUT YES if a user is ALREADY logged in according to springboot,
+		Then a matching JSESSIONID means it will consider the req authenticated. Basically SecurityContextPersistenceFilter
+		looks in the corresponding HttpSession of cookie, and a SecurityContext WILL BE THERE IF USER IS AUTHENTICATED ALREADY.
+		The SecurityContext would've been created during successful login and stored in the HttpSession,
+		so now it will be placed in SecurityContextHolder.
+
+		TLDR: SESSION cookie isn't EXACTLY a toke, but IF YOU WERE LOGGED IN in the session before, HttpSession obj
+		IN THE BACKEND is stored and checked for right session using cookie, and THAT OBJECT tells ur authenticated or NOT.
+	*/
+
+	.logout( logout -> logout.logoutSuccessUrl("/home") ) // Configures logout, goes to given url after logout (any user can access)
+
+	/*
+		When a request is sent to `/logout`, the LogoutFilter intercepts it. The user's HTTP session is invalidated,
+		the `JSESSIONID` cookie is cleared from the browser, and the browser is redirected to the specified
+		`logoutSuccessUrl` (`/home`) as an unauthenticated user.
+		The "Set-Cookie" header for JSESSIONID cookie is sent back with "Expires" set to past time, INDICATING browser to clear 		it. Springboot also DELETES the SecurityContext associated with the HttpSession object.
+	*/
+
+	return http.build();
+}
+
+
+Method Security: (method level security even for Service classes etc, OTHER than web based security)
+
+Same way as AOP proxies work, you CAN ENABLE (using certain annotations) security for even other layers like service classes, etc.
+When a request is sent with a Service bean as target, the SpringSecurityInterceptor will intercept it, and
+asks the AuthorizationManager if the user has Permission/authorization for this resource, if yes, THEN target method is invoked.
+Else, AccessDeniedException is thrown if not allowed.
+
+
+@PreAuthorize("hasRole('MEMBER') && #order.owner.name == principal.username") // to be used ON A Method
+public Item findItem(Order order, long itemNumber){...} // This annotation checks BEFORE executing the method itself if condition is
+							   true. 1st condition checks if current User has specified role,
+							   Next it checks if order object in formal param has owner.name == username
+
+Built-in variables
+authentication:			The current Authentication object from the SecurityContext.
+authentication.name:		The username of the authenticated principal.
+authentication.authorities:	The collection of authorities (roles) granted to the user.
+principal:			A shortcut that provides direct access to the principal object, equivalent to authentication.principal.
+returnObject:			The object returned by the method. Only available in @PostAuthorize expressions.
+filterObject:			The current object in the collection or array that is being filtered. Used in @PreFilter and @PostFilter
+
+Note: You can ALSO use "#" followed by a parameter name TO ACCESS METHOD PARAM objects in these expressions! For example, in a method myMethod(User user), you can access the user object with "#user" and do stuff like "#user.id". 
+
+@PostAuthorize: Evaluates an expression after a method has been invoked. It can inspect the method's return value to decide access.
+		This is useful for preventing a user from seeing an object that doesn't belong to them, even if method access was there
+		for their user. Example: @PostAuthorize("returnObject.owner == authentication.name").
+@PreFilter: Filters the arguments of a method before it is invoked. It works on collections or arrays and allows you to remove elements
+	    based on a given expression. Example: @PreFilter("filterObject.owner == authentication.name").
+@PostFilter: Filters the returned value of a method after it has been executed. It iterates through the collection or array returned by
+	     method and removes any elements for which the expression is false.
+	     Example: @PostFilter("hasPermission(filterObject, 'read')"). 
+
+
+spring-boot-starter-security: Just including this dependency will cause default login page to appear (Username is "user", password is dynamically generated and shown in console when starting up app)
+			      For logout, you just access the /logout suburl and click yes on the button in webpage to logout successfully. (Reloading page doesnt affect the logged in or out status as using the JSESSIONID cookie session is recovered)
+
+
+In @Test methods for spring boot security, you can make test do api calls with TestRestTemplate using restTemplate.withBasicAuth(username,pswd)
+In mockMvc 's case this should be done: mockMvc.perform(get("/...")).with(httpBasic("user", "password"))) 
+
+@WithMockUser(username = "user", password = "user", roles={"USER"}): Similar to basicAuth, except simply annotating this on @Test will
+			  					     use mock user details given for authentications like filterchain
+								AND @PreAuthorize, etc (method security too). No UserDetailsService used
+
+@withUserDetails("joe") - Similar to above annotation and practically can instead use withBasicAuth(), but that needs filterchain etc setup. Here this will USE A REAL USER unlike @WithMockUser, from the UserDetailsService, so that bean's working also can be tested.
+
+(For both annotations, a SecurityContext is created and placed in SecurityContextHolder, thats how these annotations work.)
+
+Warning:
+	Eg: MyObject[] myObjectArray = restTemplate.getForObject(url, MyObject[].class);
+
+	While calling using xxForObject and xxForEntity methods in both RestTemplate and TestRestTemplate, if List<> generics is used
+	to fetch an object of that type using these methods, DUE TO TYPE ERASURE YOU WILL GET ERROR!
+	Using ARRAYS IS the WORKAROUND instead, but IDEALLY use restTemplate 's EXCHANGE METHOD AS IT WILL SOMEHOW REMEMBER GENERIC TYPE
+	at runtime (forEntity and forObject are depreciated)
+
+	Eg: ResponseEntity<List<MyObject>> responseEntity = restTemplate.exchange(url, HttpMethod.GET, null,
+										new ParameterizedTypeReference<List<MyObject>>() {} );
+	
+To fetch the grantedAuthorities as a Collection, use this code:
+	SecurityContextholder	// injected, helps get SecurityContext
+	.getContext().getAuthentication().getAuthorities() //Gets the roles/"authorities" of this user from Authentication obj
+	.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()); //To convert to proper List<String> from Collection<? extends GrantedAuthority>
+
+
+@Primary - is annotated on bean declaration to specify it as MAIN contender over other qualifying beans.
+	   @Qualifier is used AT INJECTION SITE and can EASILY OVERRIDE @Primary.
+
+Ways to custom define your UserDetailsService and AuthenticationProvider :-
+
+class CustomUserDetailsService implements UserDetailsService {	@Override public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {...}	}
+
+class CustomAuthenticationProvider implements AuthenticationProvider { @Override public Authenticatin authenticate(Authentication auth) throws AuthenticationException {...} }
 
 ---------------------------------------------------
 ==================================================
