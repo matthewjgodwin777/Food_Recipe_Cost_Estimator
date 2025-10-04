@@ -2222,7 +2222,233 @@ Ways to custom define your UserDetailsService and AuthenticationProvider :-
 
 class CustomUserDetailsService implements UserDetailsService {	@Override public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {...}	}
 
-class CustomAuthenticationProvider implements AuthenticationProvider { @Override public Authenticatin authenticate(Authentication auth) throws AuthenticationException {...} }
+class CustomAuthenticationProvider implements AuthenticationProvider { @Override public Authenticatin authenticate(Authentication auth) throws AuthenticationException {... //this parameter has credentials from client haven't been verified
+	...
+	return new UsernamePasswordAuthenticationToken(username, password, AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
+} }
+
+
+Actuators: -
+
+Production grade monitoring without implementing it ourselves, can return metrics and health indicators.
+Can integrate with 3rd party systems for aggregating and visualization.
+
+JMX(Java Management Extensions) is a technology that exposes your application's operational data and management capabilities through a standard Java-based protocol. This can be used for fetching data from actuator. (more fine grain control)
+OR
+Http protocol api calls:
+/actuator/health - Default response is just { "status":"UP" }. (later using dbs it does checks internally for that too)
+/actuator/metrics - { "name":["jvm.memory.max","http.server.requests"...]} (Lists of most available metrics, MAYBE NOT ALL INBUILT ONES)
+/actuator/{metric_name} - If you use one of the names from list, you can fetch the details like:
+{"name":"http.server.requests", "measurements":[ {"statistic":"COUNT","value":13} , ...], // tells 13 http reqs received till now
+	"availableTags":[{"tag":"method", "values:["POST","GET"],.."}] } 		  //mentions what all http methods available
+
+(spring-boot-starter-actuator dependency's presence alone adds these endpoints, here are more endpoints of /actuator/xxx):
+/beans - List of all Spring beans created by app with details like scope, datatype, resource and dependencies.
+/conditions - Report of AutoConfiguration classes with reasons why or why not they were applied.
+/env - Gives all system properties, environment vars, etc. (from ConfigurableEnvironment)
+/configprops - Collated list of all @ConfigurationProperties
+/info - Arbitary application information YOU specify, empty by default unless you add some properties in yml or .properties files.
+	Needs <executions><execution><goals><goal> build-info </goal></goals></execution></executions> SET for spring boot maven plugin,
+	So it generates atleast empty build file to display in this endpoint. (in target/classes/META-INF/build-info.properties)
+
+	management.info.java.enabled=true	#Displays details about "java":{...} in /info response json
+	management.info.env.enabled=true	#Takes info from properties (as below statements), env, etc. & includes in "build":{...}
+	
+	NOTE: All info.xxx=value OR info.xxx.yyy=value ,etc properties will be included in /info response json as like
+	{"xxx":value,...} AND {"xxx":{ "yyy":value },...}. (Basically represent the json path as property and it will also be in /info)
+
+/loggers - Query about logging levels of different packages
+/mappings - ALL the Spring MVC's @RequestMapping paths are fetched.
+/session - Fetch or Delete user sessions (only if using Spring Session)
+/shutdown - (DISABLED BY DEFAULT) Shuts down app gracefully.
+/threaddump - Performs threaddump, basically provides snapshot of ALL running threads in JVM at the moment, with stack traces,
+	      thread states, lock acquired/not informations, etc.
+/jolokia - Exposes JMX beans over HTTP (not just actuators)
+
+POST /loggers/{any.package.name} {"configuredLevel":"INFO"}	- Changes the logging level FOR THAT PACKAGE AT RUNTIME!
+
+Enabled means endpoint is created and req bean(s) is in application context. Like,
+All endpoints are "Enabled" BY DEFAULT EXCEPT /shutdown suburl.
+
+Exposed means endpoint is accessible via JMX or HTTP.
+HTTP by default exposes only /health (/into too in springboot 2.x.x but not in 3.x.x) , whereas JMX by default exposes ALL ENABLED ENDPOINTS.
+
+(JMX capability is only available when spring.jmx.enabled=true,
+Http capability is only available when using Spring MVC, WebFlux, or Jersey)
+
+/actuator/xxx is by default the suburl for actuator BUT IT IS CUSTOMIZABLE:
+management.endpoints.web.base-path=/admin
+
+# Below property CAN EXPOSE MORE ENDPOINTS
+management.endpoints.web.exposure.include=beans,env # OR JUST USE * as this property's value, indicating ALL ENDPOINTS to be exposed.
+
+WARNING: Though /health is exposed by default, IF THIS ABOVE PROPERTY IS USED to customize and YOU DONT MENTION IT TO BE EXPOSED,
+	 Then it WON'T BE EXPOSED. ('health' is default value of this property, so you cant just OMIT "health" & expect it to be there)
+
+Usually to secure actuator endpoints, you simply use .requestMatchers as seen before:
+http.authorizeHttpRequests((authz)-> authz
+	.requestMatchers("/actuator/health").permitAll()
+	.requestMatchers("/actuator/**").hasRole("ACTUATOR")
+	.anyRequest().authenticated());
+return http.build; // to return a SecurityFilterChain object as Bean from this @Bean method
+
+Now WHAT IF default ACTUATOR endpoint is CHANGED/CUSTOMIZED later? Yes we can change hardcoded values but here is alternative lines:
+	.requestMatchers( EndpointRequest.to(HealthEndpoint.class) ).permitAll() // Both can work "base-path agnostic" 
+	.requestMatchers( EndpointRequest.toAnyEndpoint() ).hasRole("ACTUATOR")     i.e not knowing base path and still working
+
+
+Metrics:
+Micrometer is monitoring or metrics facade which collects metrics IN A VENDOR NEUTRAL WAY.
+it's like slf4j is for logging (It ISNT the implementation, but is like interfaces, easy to use but you also include actual impl too).
+Barely adds any overhead.
+
+Custom Metrics CAN BE CREATED, but its NOT ENDLESS POSSIBILITIES, instead you are limited to do BASED ON certain types like:
+Counter: Used for measuring a single, non-decreasing value over time. It can only be incremented.
+Gauge: Used for measuring an instantaneous value that can go up or down. (Like size of current threads or memory)
+Timer: Used for measuring the duration of event and its frequency. It provides a count of events, the total time, and the maximum time.
+Distribution Summary: Similar to a timer, but for non-time-based values. It measures a distribution of events. Eg: Tracking the size
+		      of payloads in bytes or the number of items processed per batch.
+
+MeterRegistry: A Bean where such Classes are created or REGISTERED
+
+You would want to use arbitrary combo of values to check the metrics for, like: Http method, URI, response & exception status, etc.
+2 Ways to access metrics data on Http requests:
+Hierarchical Metrics: This basically ARRANGES THE METRICS INTO DIRECTORY-LIKE STRUCTURE, like for given metric, inside that dir subfolders for each uri, then subdirs for each HttpMethod available, and inside that for each statusCode received.
+Disadvantage is if you want some "total" of some metric in each req, you will have to do RECURSIVE SEARCH AND ADD in the directories. Main Disadvantages are consistent naming convention hard to achieve and adding new attribute may break existing queries (if exact path slightly changes as its a "hardcoded" query). Eg: Metrics > http.server.requests > uri=/api/users > method=GET > status=200 > count
+
+Example to access value: http.method.get.status.200 (key AND value are linearly placed in left to right order)
+
+Dimensional Metrics: (How Micrometer ACTUALLY WORKS) Metrics are tagged (aka Dimensional)
+
+Examples: http?tag=method:get&tag=status:200 , http?tag=method:get&tag=status:200&tag=region:us-east
+	 (Flexible Naming Convention, and Adding a new attribute is easy.)
+
+Timer: (basically how to use one of the types of metrics called Timer)
+[ Gives count, mean, max and total of it's metric ]
+
+* Inject MeterRegistry (holds all metrics related beans)
+* Timer timer = registry.timer("orders.submit"); //gets timer object and sets Metric name as "orders.submit"
+						 ( "/actuator/metric/orders.submit" suburl gets you this metric details)
+* to use Timer obj in controller method to get stats on the time taken by controller method code:
+	-> 	@PostMapping("/orders") public Order placeOrder(...) {
+			return timer.record( ()->{/* ALL THE CONTROLLER METHOD CODE INSIDE TO TIME */} );
+		}
+		// YES, the record method RETURNS EXACT SAME OBJ AS lambda code in it, solely only diff is that it times it.
+
+[OR]...
+Simply ANNOTATE @Timed("orders.summmary") on controller method AND IGNORE THESE ABOVE 3 STEPS !!!
+(Yep , that easy, if doing on controller method normally, TimedAspect bean is Autoconfigured by springboot)
+
+
+DistributionSummary : Similar to timer as it gives count, max and total fields by default of a value you ask it to record each time the controller method code runs. simple as that. But code to use IS LONGER than timer.
+
+* INJECT MeterRegistry in constructor of controller class and have class level final DistributionSummary summary;
+
+* summary = DistributionSummary.builder("reward.summary") //specifies metric name
+				.baseUnit("dollars") //optional, simply a field for clarity shown when fetching this metric.
+				.register(registry); //Registers in the meterRegistry obj
+
+* Inside controller method code, simply invoke:
+  summary.record(intOrLongOrFloatOrDoubleValue); //it will convert to double and use
+
+In /actuator/metric/reward.summary , output json will be like: { "name":"reward.summary",
+								 "baseUnit":"dollars",
+								 "measurements": [
+											{ "statistic":"COUNT", "value":3 },
+											{ "statistic":"TOTAL", "value":13 },
+								 "availableTags":[]
+								]}
+
+Counter: 
+Counter counter = meterRegistry.counter("account.fetch","type","fromCode"); //1st param-Metric name, 2nd & 3rd param is key-value tag
+counter.increment(); //When invoked, metric "statistic":"COUNT" 's value increases.
+
+Warning: EVEN if this above call is done in MULTIPLE CLASSES WITH SAME metric NAME, counter WILL HAVE SAME INSTANCE, NOT NEWLY CREATED.
+
+Note: to add tags simple use .tags(key,value) to add a tag to these metric objects when building, OR constructor call in counter's case.
+      Similarly .withDetail(key,value) is SIMILAR TO TAGS but in Health object builder, rendering instead inside "details" json, which 
+      is inside the healthCheck custom class/indicator you created (indicator name is class name BUT IN CAMEL CASE), inside "components"
+
+Health indicators in /actuator/health: -
+
+BY DEFAULT /health suburl returns { "status":"UP" } , which DOES NOT seem USEFUL. BUT USE BELOW PROPERTY FOR MORE DETAILS! :
+management.endpoint.health.show-details=always		# This ensures to show breakdown of app health details.
+
+With this property in place, now the response json would look like:
+
+{
+  "status": "UP",		# Even if 1 is down, this shows as down (regardless of property file "show-details" config)
+  "details": {			# This "details" property in springboot 2.x.x is "components" in springboot 3.x.x (not 100% sure)
+    "db": {
+      "status": "UP",		# A sample validation query like "SELECT 1;" is executed to check if db is UP or DOWN BY DEFAULT.
+      "details": {
+        "database": "MySQL"
+      }
+    },
+    "diskSpace": {
+      "status": "UP",		# This is UP if ATLEAST 10MB space is free BY DEFAULT.
+      "details":{"total":499963170816,...}
+    }
+  }
+}
+
+GROUP Health Indicators: You can group health indicators for ease of configuring (for eg, group "system" you can use property to display details of those indicators, meaning all health indicators in that group are set to display).
+
+management.endpoint.health.group.groupname.include=diskSpace,db	      #Can have multiple indicators grouped to configure easier together
+
+management.endpoint.health.group.groupname.show-details=always	      #ONLY details of indicators in "groupname"(aka diskspace & db) are
+					      present in /actuator/health response (NO CHANGE IN RESPONSE FORMAT just because of groups)
+								      #Rest of indicators NOT affected if configured like this
+
+management.endpoint.health.status.order=FATAL,DOWN,OUT_OF_SERVICE,UNKNOWN,UP
+[Built in status values are : DOWN, OUT_OF_SERVICE, UNKNOWN, UP] (default order is this, So if FATAL is encountered, that case ALONE SPECIALLY is treated like it's DOWN)
+
+Fun fact: If show-details property is always for a group but NOT overall, then only components are listed with status value in /health
+	  general response, but /health/{componentName} will give proper details.
+
+Several health indicators are AUTOMATICALLY SET UP if DEPENDENCIES ARE IN CLASS PATH, like DiskSpace,DataSource,Cassandra,Elasticsearch,InfluxDb,JMS,Mail,MongoDB,Neo4J,RabbitMQ,Redis,Solr,etc.
+(Basically anything springboot does Autoconfiguration for)
+
+What if you wanted to include Health Indicator to show status OF AN EXTERNAL SERVICE?
+YOU CAN CUSTOMISE THE health indicator to include external api health YOURSELF using CUSTOM CLASS!
+
+2 Ways to do this is : 
+* Implement health() method of HealthIndicator interface
+
+@Component
+public class MyCustomHealthCheck implements HealthIndicator {
+	@Override public Health health(){ //Use custom logic to contact external api, etc.
+		return Health.down()	        //Builds Health object indicating DOWN status CONDITIONALLY if you custom logic says so.
+			.withDetail("someFieldOrMetric",0).build();   // TAKES ANY KEY-VALUE PAIR to show in the "details" section.
+	}
+}
+
+* [OR] Can Extend AbstractHealthIndicator and override doHealthCheck() method ALSO
+
+Output json /health will have:
+{ "status":"DOWN",
+  "details":{
+		"myCustomHealthCheck":{ "status":"DOWN",		# Name is taken from class BUT USES CAMEL CASE INSTEAD!
+					"details":{
+						    "someFieldOrMetric":0	# .withDetail(K,V) key value pairs U GIVE DISPLAYED HERE
+						  }},
+		"diskSpace":{"status":"UP",...},...
+	    }
+}
+
+Health.up().withDetail("key","val").build() is another method call to indicate status UP.
+Health.status("RANDOM_VAL").xx.yy... can be used to specify a CUSTOM STATUS or UP or DOWN too!
+
+Ensure to use this property: management.endpoint.health.status.order=FATAL,DOWN,OUT_OF_SERVICE,UNKNOWN,UP
+Or else it will treat your custom status as UNKNOWN and WILL NOT AFFECT THE AGGREGATE health status of your app.
+(management.endpoint.health.group.randomgrp.status.order=... is a way TO SPECIFY STATUS ONLY FOR PARTICULAR GROUP!
+More like basically anything to specify for a group use like management.endpoint.health.group.<grpname>.yyy format)
+
+
+Ideally these data especially /metric/XXX ones SHOULD BE SENT TO EXTERNAL SYSTEMS, TO GRAPH or find statistical representations, like:
+Atlas (Netflix), CloudWatch, Datadog, Dynatrace, Graphite, JMX, InfluxDB, Prometheus, Wavefront (VMware),etc.
+
+
 
 ---------------------------------------------------
 ==================================================
