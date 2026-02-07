@@ -838,97 +838,202 @@ D. The logging levels of a package that can be accessed via the loggers endpoint
 Answers: -
 
 1) B
-2) D and possibly C if the brackets are corrected and were accidental.
-3) A and B
-4) A
-5) A and C
-6) A and C
-7) B and E probably but C alone not sure and could replace E, mosty @Spy isn't supported only @SpyBean is in springboot test directly.
-8) D
-9) A and C
-10) B, C and E, but F also should work, not sure just memorise BCE for now but not confident.
-11) A
-12) B
-13) A
-14) A
-15) B,D and E. NOT A.
-16) A and E
-17) D
-18) A and B
-19) B and C	(Fun fact, AsyncRestTemplate (depreciated) and WebClient in spring-webflux dependency actually supports non blocking calls, as ASYNC != Non-blocking,
-		async just blocks another thread instead of main thread thats all. that still 'blocks' that extra thread, non blocking blocks NO thread at all.)
-20) D 		(its found in spring-test dependency, so not just boot, it works for core spring tests too)
-21) C and D	(Interoperable word i didnt know)
-22) C
-23) B, C and D
-24) A and B
-25) B and C
-26) A and B
-27) B and D
-28) B and E
-29) A, B and F
-30) C, D, and F
-31) A and B
-32) D
-33) D and E
-34) A, B and D
-35) A and E
-36) D
-37) A and E
-38) A and B
-39) A
-40) B and D	(By classpath, it basically means all classes in working directorys, everything, and dependency jars etc)
-41) C
-42) B and D
-43) C and D
-44) A and C
-45) B
-46) A
-47) C
-48) C and E
-49) D
-50) C and D
-51) A and D
-52) B and C
-53) C and D
-54) C and E.   (Only "Slice Tests" (like @DataJpaTest or @JdbcTest) are transactional by default, obviously c and e)
-55) B and D    (@Component and component scanning is considered 'IMPLICIT BEAN DECLARATION')
-56) B and E
-57) B and D
-58) B
-59) C
-60) A and C
-61) A
-62) A and C
-63) C
-64) A
-65) B
-66) B
-67) B
-68) C and E
-69) A and D
-70) D
-71) C and E
-72) C and D
-73) A and B
-74) C and D    (No default RowMapper for jdbcTemplate ofcourse)
-75) A
-76) A and B
-77) D and E
-78) B
-79) D and E
-80) A and D
-81) B and D
-82) B and C
-83) A and D
-84) C and E
-85) C and D
-86) C and D
-87) D		(@AfterThrowing can only throw to replacing currently thrown exception, CANT CATCH AND AVOID an exception)
-88) B and D
-89) C and E
-90) A and D
 
+2) D and possibly C if the brackets are corrected and were accidental.
+
+3) A and B
+
+4) A. If you see @WebMvcTest, @DataJpaTest, @SpringBootTest, etc. → Answer is @MockBean, else RARELY @Mock.
+
+5) A and C
+
+6) A and C
+
+7) B and E probably but C alone not sure and could replace E, mosty @Spy isn't supported only @SpyBean is in springboot test directly.
+   "Additionally, you can use @SpyBean to wrap any existing bean with a Mockito spy." says the official spring website, technically B and E answer.
+
+8) D
+
+9) A and C
+
+10) B, C and E, but F also should work, not sure in Spring 5 as F option IS NOT GUARANTEED TO WORK PRACTICALLY.
+    This beanName matching with field as fallback IS NOT APPLICABLE TO METHOD OR CONSTRUCTOR INJECTION BY DEFAULT.
+    But in Spring 6 it MANDATORILY REQUIRES A -parameter flag when executing where in Spring 5 its unreliable so BCE is answer.
+
+11) A
+
+12) B
+
+13) A (All conversions including UUID and many more supported)
+
+14) A (authorizeRequests is used with antMatchers and is depreciated but usable but authorizeHttpRequests() is better with requestMatchers)
+
+15) B,D and E. NOT A.
+
+16) A and E
+
+17) D
+
+18) A and B
+
+19) B and C	(Fun fact, AsyncRestTemplate (depreciated) and WebClient in spring-webflux dependency actually supports non blocking calls, as ASYNC != Non-blocking,
+
+		async just blocks another thread instead of main thread thats all. that still 'blocks' that extra thread, non blocking blocks NO thread at all.)
+
+20) D 		(its found in spring-test dependency, so not just boot, it works for core spring tests too)
+
+21) C and D	(Reliable - Predictable, consistent, well-defined behavior, Interoperable - Works across platforms/languages using standard HTTP + JSON/XML.)
+		Relative is NOT a meaningful option itself.
+
+22) C
+
+23) B, C and D (Cucumber is writing tests in plain English (Gherkin standard), PowerMock extenteds Mockito to do even static/constructor/final/private mocking)
+	       (Ideally PowerMock shouldn't be used as it manipulates bytecode and is slow+complex and is last resort. EasyMock is OLDER alternative to Mockito)
+	       (with functions like replay() etc, NOT standard now as Mockito is used. Hamcrest methods WORKS WELL with MockMvc but is STANDALONE actually)
+
+24) A and B (AutoConfigureOrder isn't ideal or reliable to use so have to go with the other obvious options)
+
+25) B and C (@Autowired fields are actually injected BEFORE any config methods are invoked ASSUMING CONFIG METHODS MEAN @PostConstruct.)
+
+26) A and B (DANGER doubt, BASICALLY meant meta annotation on @XXX means IN THE @interface XXX {} the annotation SHOULD BE ON IT, DONT OVERTHINK THIS!!!)
+
+27) B and D (BeanPostProcessor interface impls CAN be ordered using @Order(1) (highest priority is lowest number) on EACH IMPL CLASS)
+
+28) B and E
+
+29) A, B and F
+
+30) C, D, and F (once second A looks convincing but NO WAY DEPENDENCY INJECTION IS CONSIDERED 'EASILY TRACEBLE')
+
+31) A and B  (ONLY ONE @SpringBootApplication or @SpringBootConfiguration is allowed since it declares the entry configuration class)
+
+32) D
+
+33) D and E
+
+34) A, B and D
+
+35) A and E (✅ Method parameters ✅ Authentication object (authentication, principal) ✅ User authorities (hasRole, hasAuthority) ✅ Spring beans (custom logic))
+    HttpServletRequest request can be injected IN method to .getMethod(), .getRequestURL() [full url with localhost] , .getRequestURI() [relative uri], etc as required.
+
+36) D
+
+37) A and E
+
+38) A and B (YES, h2 hsql db and derby ALL INMEMORY DBs are RECREATED DURING STARTUP)
+
+39) A (SPECIAL CASE WITH @Configuration or @XXConfiguration classes , in other cases target class is WRAPPED WITH PROXY CLASS,
+	HERE THE CONFIG CLASS IS CGLIB SUBCLASSED and ALL BEAN METHODS ARE OVERRIDDEN TO ENSURE THEY CHECK CONTEXT BEFORE EXECUTION!!!)
+
+40) B and D	(By classpath, it basically means all classes in working directorys, everything, and dependency jars etc)
+
+41) C
+
+42) B and D (@DataJpaTest isnt used for testing JdbcTemplate exactly, YES its available in it but ideal for @JdbcTest)
+
+43) C and D
+
+44) A and C
+
+45) B
+
+46) A
+
+47) C
+
+48) C and E
+
+49) D (TestPropertySource annotation path by default starts from Classpath IF its "/X" file, if slash not there then SAME PACKAGE AS TEST CLASS)
+
+50) C and D
+
+51) A and D
+
+52) B and C
+
+53) C and D
+
+54) C and E.   (Only "Slice Tests" (like @DataJpaTest or @JdbcTest) are transactional by default, obviously c and e)
+
+55) B and D    (@Component and component scanning is considered 'IMPLICIT BEAN DECLARATION')
+
+56) B and E
+
+57) B and D
+
+58) B
+
+59) C
+
+60) A and C   (Yes Spring Data GENERALLY has implementations for all DB types like Mongo, Neo4J, Redis etc.)
+
+61) A
+
+62) A and C (Technically even RestClientTest along with Repository and Web slice testing IS IN SPRING-BOOT-STARTER-TEST, but option says JUST "Client",
+	     vague and NOT STANDARD ANYWAYS compared to the other 2, so finally A and C is answer) 
+
+63) C
+
+64) A
+
+65) B
+
+66) B
+
+67) B
+
+68) C and E
+
+69) A and D
+
+70) D
+
+71) C and E
+
+72) C and D
+
+73) A and B
+
+74) C and D    (No default RowMapper for jdbcTemplate ofcourse,YOU NEED TO DEFINE unless retrieving primitive/wrapper types and row as Map<String, Object>)
+
+75) A	(there is no spring-boot-starter-rest , only x-x-x-web)
+
+76) A and B
+
+77) D and E (A is wrong coz it says ONLY for controller method, but we know on class also we can use,
+	     and option B wrong coz controller method annotated with this CAN RETURN VIEW but we don't MAP TO A VIEW, that doesn't even make sense)
+
+78) B
+
+79) D and E
+
+80) A and D (Scans @ControllerAdvice, @ExceptionHandler, Filters, etc stuff required by default too, DOES NOT run a server, and boot ALREADY SUPPORTS Mockito by default) 
+    Note: MockMvc is auto injected in @WebMvcTest but otherwise @AutoConfigureMockMvc on test class or MockMvcBuilder manually building obj is needed.
+
+81) B and D
+
+82) B and C
+
+83) A and D
+
+84) C and E
+
+85) C and D  (can ONLY check equality of tags so NO thresholds, so A alone remained other than C and D, but headers ISN'T A PROPER NON-BUSINESS TAG SO IT's NOT BUILT IN
+	      Thats why uri, method, status, exception, outcome [SUCCESS, CLIENT_ERROR, SERVER_ERROR, REDIRECTION, INFORMATIONAL)] ARE DEFAULT 5 tags.)
+
+86) C and D  (Example: To get max orderDate, correct method name should be - findFirstByOrderByOrderDateDesc())
+
+87) D		(@AfterThrowing can only throw to replacing currently thrown exception, CANT CATCH AND AVOID an exception)
+
+88) B and D   (LUCKY GUESS, C and E options ARE DONE BY BeanPostProcessor, NOT Bean 'FACTORY' PostProcessor)
+
+89) C and E  (DANGER, GOT IT WRONG! I thought @Value and @ConfigurationProperties each would have 1 correct option, DONT ASSUME THINGS!!! Several MISCONCEPTIONS :
+		* BOTH ANNOTATIONS CAN ACCESS ENVIRONMENT
+		* RELAXED BINDING MEANS FIELD AND ACTUAL PROPERTY NAME may not PERFECTLY MATCH IN CASE OR SEPERATING SYMBOLS,
+		  so @ConfigurationProperties IS RELAXED BINDING to properties in terms of names
+		* @Value HAS STRICT BINDING of properties to variables in terms of names)
+
+90) A and D  (Wasnt sure, but logging dependency NOT needed to be added to use /actuator/loggers endpoint)
 
 
 
