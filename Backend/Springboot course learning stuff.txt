@@ -172,7 +172,6 @@ Vanilla Spring uses jdk proxies as first preference but Springboot tries cglib f
 WARNING: NEVER MIX AND MATCH INTERFACE AND IMPL CLASS INJECTION POINTS FOR THE SAME BEAN. like it creates 1 single proxy and it HAS to be compatible with al injection points. Dont confuse.
 
 
-
 Web Socket Scope, Refresh Scope, Thread Scope (this one maybe not native) , or even custom scopes rarely are used and exist.
 
 
@@ -231,7 +230,7 @@ Alternate to using env.getProperty(), use: -
 Profiles: -
 Actually Beans belong or not belong to profiles,
 Like DataSource bean can be many but dev has one, and production uses another bean similar though.
- aSo profile just categorizes beans (and usual beans is common to all).
+ also profile just categorizes beans (and usual beans is common to all).
 
 @Profile("cloud") - CAN BE USED ON ANY BEAN so the bean is only available in context IF ITS IN THAT MENTIONED PROFILE!
 @Profile("!cloud") - Means initialized when profile IS NOT "cloud"
@@ -315,7 +314,6 @@ If you want to find a property regardless of whether it's in a .properties file,
 
 WARNING: Single quotes '' INSIDE environment INSIDE SpEL expression IS MANDATORY whereas OPTIONAL INCASE OF systemProperties and systemEnvironment, BUT WONT HURT.
 
-
 And YES, @Value("#{new Integer(environment['daily.limit']) * 2}") IS PERFECTLY FINE!
 
 Just remember to have valid usage of the value from environment AS IT IS A STRING,
@@ -339,7 +337,7 @@ Annotation-based Configuration: -
 @Component if you annotate on a class,
 If you annotate @ComponentScan("com.package") on the CONFIG class,
 It will search the (sub)package(s) specified and whichever classes have this @Component it will take as Bean adding to application context.
-(If no package/argument given, just @ComponentScan, it takes the config class's package and scans inside that for beans ALONE. (its bad if package is only for config))
+(If no package/argument given, just @ComponentScan, it takes the config class's package and subpackages and scans inside that for beans ALONE. (its bad if package is only for config))
 
 
 3 Types of injections: (Ensure NEVER to create object of such a class using new keyword, or else everything expected to be injected will be null)
@@ -352,7 +350,7 @@ Constructor injection doesnt let that happen, atleast easily. setters will get i
 WHY WILL SPRING CARE ABOUT CIRCULAR DEPENDENCIES WHEN NOW IT CAN FREELY INJECT using setters since all are created by then...got it? so thats one senario setter injections are helpful.
 
 In method injection, Optional<...> IS ALSO ALLOWED TO BE INJECTED, as IT WILL UNDERSTAND THAT BEAN IS TO BE INJECTED IN OPTIONAL FORM!!!, like below line:
-@Autowired public void setAccountService(Optional<AccountService> accountService){...}	//Injects Optional.empty()
+@Autowired public void setAccountService(Optional<AccountService> accountService){...}	//Injects Optional.empty() if bean isn't there
 
 @Qualifier: -
 public TransferServiceImpl(@Qualifier("jdbcAccountRepository") AccountRepository accountRepository){} // Qualifier takes the bean name, not class name.
@@ -373,7 +371,7 @@ Even if more than one constructor is there, if there is ZERO-ARGUMENT CONSTRUCTO
 ELSE, THEN @Autowired IS MANDATORY ON ONE OF THE CONSTRUCTORS.
 
 //CHANGED HERE
-WARNING: Annotating @Autowired(required = false) on multiple constructors means IT TAKES THE ONE WITH MOST NUMBER OF PARAMETERS!
+WARNING: Annotating @Autowired(required = false) on multiple constructors means IT TAKES THE ONE WITH MOST NUMBER OF PARAMETERS! (GREEDY logic)
 
 
 Vaguely mentioning @ComponentScan({"org","com"}) is TERRIBLE PRACTICE as too many components wil be searched for (EVEN IN JAR DEPENDENCIES)
@@ -401,7 +399,7 @@ YES YOU CAN CREATE A META ANNOTATION YOURSELF. Eg: @MyTransactionalService if yo
 import java.lang.annotation.*;
 
 @Target(ElementType.TYPE) // Where it can be used (.METHOD, .FIELD, etc., here TYPE means 4 things it can be used on: class, interface, enum, annotation type)
-@Retention(RetentionPolicy.RUNTIME) // Available at runtime (most used), sometimes can use .CLASS (available in .class fiels but not runtime, eg: For frameworks which will see the annotation in compiled classes), or .SOURCE (just in typed source code alone, eg: for just documentation)
+@Retention(RetentionPolicy.RUNTIME) // Available at runtime (most used), sometimes can use .CLASS (available in .class fields but not runtime, eg: For frameworks which will see the annotation in compiled classes), or .SOURCE (just in typed source code alone, eg: for just documentation)
 
 public @interface MyAnnotation { } // Marker annotation, no members, @interface is similar to defining an interface, but it’s specifically for annotations.
 
@@ -467,62 +465,45 @@ Eg:
 
 Bean LifeCycle Phases: Initializing, Usage, Destruction.
 
-
-Spring Bean Lifecycle (in order):
+Spring Bean Lifecycle (Corrected for 2.7 Exam):
 
 1. Load & Process Bean Definitions
-
 @Configuration classes processed
 @Component classes scanned
 Bean definitions added to BeanFactory (ApplicationContext extends BeanFactory)
 
-2. BeanFactoryPostProcessor Phase
+2. BeanFactoryPostProcessor Phase (Definition-level)
+All BeanFactoryPostProcessor beans run (can modify/read bean definitions before any objects exist)
+Example: PropertySourcesPlaceholderConfigurer resolves ${...} in the blueprints.
 
-All BeanFactoryPostProcessor beans run (can modify bean definitions before beans are created)
-public class BeanFactoryPostProcessorImpl implements BeanFactoryPostProcessor {
-    @Override
-    public void postProcessBeanFactory(ConfigurableBeanFactory beanFactory) {
-        // custom logic to modify bean definitions
-    }
-}
+3. Bean Creation (Instantiation & Population)
+Constructor Injection: Bean is instantiated (the only injection during object creation).
+Field & Setter Injection: Performed by specialized BeanPostProcessors (like AutowiredAnnotationBeanPostProcessor)  [YES THIS RUNS BEFORE THE OTHER BEAN POSTPROCESSORS].
+Field injection happens before Setter injection.
 
+4. Awareness Phase
+Spring calls "Aware" interfaces if implemented (e.g., BeanNameAware, BeanFactoryAware, ApplicationContextAware).
+This is where the bean is "told" about the container.
 
-//CHANGED HERE (FULL SECTION)
-3. Bean Creation
+5. BeanPostProcessor Phase (Initialization) [Initializing PHASE]
+postProcessBeforeInitialization (Hook for BPPs)
 
-Dependencies resolved
-Beans instantiated (constructor first, then setter/field injection after this but before BeanPostProcessor )
-If @Lazy, bean is created only when needed
+Initialization Methods (Strict Order):
+@PostConstruct (JSR-250) - Always runs first.
+afterPropertiesSet() (InitializingBean interface).
+init-method (Defined in @Bean annotation) - Always runs last.
 
-4. BeanPostProcessor Phase (instance-level) [This IS Initializing PHASE]
+postProcessAfterInitialization (Hook for BPPs)
+CRITICAL: This is where AOP Proxies are created (e.g., for @Transactional, @Async).
 
-All BeanPostProcessor beans run for each bean:
+6. Bean Usage
+Beans are ready for use. Singleton beans are stored in the ApplicationContext cache.
 
-* postProcessBeforeInitialization(bean, beanName)
-
-* Bean init methods:
-	@PostConstruct method (COMES FIRST BEFORE init-method)
-	@Resource injection (both enabled by CommonAnnotationBeanPostProcessor)
-	init-method (if configured)
-
-* postProcessAfterInitialization(bean, beanName)
-
-
-public interface BeanPostProcessor { //has to be implemented and that impl class has to be @Component
-    Object postProcessBeforeInitialization(Object bean, String beanName);
-    Object postProcessAfterInitialization(Object bean, String beanName);
-}
-
-
-5. Bean Usage
-
-Beans are ready for use in the application
-
-6. Bean Destruction
-
-When context closes:
-@PreDestroy method
-destroy-method (if configured)
+7. Bean Destruction (Destruction PHASE)
+Note: Only for Singleton beans; Spring does not manage destruction for Prototype beans.
+@PreDestroy (JSR-250)
+destroy() (DisposableBean interface)
+destroy-method (Defined in @Bean annotation)
 
 
 ----------------------
@@ -534,7 +515,7 @@ Eg: @Bean
     public static BeanFactoryPostProcessor myConfigurer() { ... }
 
 
-PropertySourcesPlaceholderConfigurer
+PropertySourcesPlaceholderConfigurer (Helps resolve ${...} mentioned properties, including @Value etc)
 
 Spring 4.3+: auto-configured for value resolution
 Older Spring: must configure manually
@@ -542,7 +523,7 @@ Older Spring: must configure manually
 
 Java Config      : Read all @Bean annotated method signatures | BeanFactoryPostProcessor | Call @Bean method implementations | BeanPostProcessor
 VS
-Annotation Config: @Component Scanning | BeanFactoryPostProcessor | Instantiation (@Autowired constructor, then injection into @Autowired methods, fields) | BeanPostProcessor
+Annotation Config: @Component Scanning | BeanFactoryPostProcessor | Instantiation (@Autowired constructor, then injection into @Autowired fields, then methods) | BeanPostProcessor
 
 ----------------------
 
@@ -592,7 +573,7 @@ System.out.println(myService.getClass());
 
 Limitations:
 
-Only public methods are proxied.
+Only public methods are proxied by JDK proxy (and non private methods by CGLIB).
 Self-invocation (calling another method in the same bean) does not go through the proxy.
 Final methods/classes cannot be proxied by CGLIB.
 
@@ -622,7 +603,7 @@ WILL NOT DO THIS PHASE IF APP ISNT SHUT DOWN GRACEFULLY, like killed or terminat
 2 Different Configuration types:
 
 Java config: Takes bean name from method name, or name/value attribute. Type is taken from method return type.
-Annotation-based Config: From Annotation value attr (we can give name as param @Bean(name="sampleBean")), Type is the class type.
+Annotation-based Config: From Annotation value attr (we can give name as param @Component(value="sampleBean")), Type is the class type.
 
 One main difference is Java config typically RETURNS INTERFACE TYPE as method return type, NOT implementation class type.
 But Annotation-based Config ALWAYS RETURNS THE EXACT Impl class TYPE as it has no choice since impl class is the one annotated.
@@ -640,7 +621,7 @@ Best Practices:
 
 --------------------------------------
 AOP: -
-Aspect-Oriented Programming is sort of a set of best practices, which enables modularization (module=class in java) of cross-cutting concerns.
+Aspect-Oriented Programming is sort of a set of best practices, which enables modularization (module class in java) of cross-cutting concerns.
 Example: below concerns should ideally be as one modular class instead of being done FOR EVERY SINGLE CLASS/METHOD (or in many basically):
 Logging & Tracing, Transaction Management, Security, Caching, Error Handling, Performance Monitoring, Custom Business Rules.
 
@@ -686,6 +667,8 @@ AOP Proxy: An "enhanced" class that stands in place of original, having extra be
 
 NOTE: some cases both proxies cant be used, like class is final means CGLIB cant be used, and if it doesnt implement interface, jdk dynamic proxy also cant be used. 
 If you use such proxies, reason why Interface is required at injection point is, a new class with new name (with Aspect features or other stuff) will be there internally, if you had injected SPECIFICALLY your impl class somewhere, it might fail as its possibly different class. (mainly JDK proxy case I mean, as it could have same interface class but its not related to impl class directly...)
+
+YES, JDK PROXY WILL BE THE FALLBACK EVEN IF : spring.aop.proxy-target-class=true
 
 
 @Aspect // Aspect Annotation: Declares as an aspect class
@@ -734,11 +717,11 @@ outgoing return    |__________^__|______________________________|__________|
 
 
 
-NOTE: Only methods declared in the interface Cache are proxied.
+NOTE: Only methods declared in the interface Cache are proxied in JDK dynamic proxy.
 If your implementation class SimpleCache has an extra set... method not in the interface, the aspect will not be applied to that method.
 The aspect will work on the other set... methods that are declared in the interface.
 
-(But in CGLIB where interfaces arent declared to be implemented, if subclass is used, then this problem WONT BE THERE. But if interface it implements and has to be inejcted as interface type IN PURE SPRING, dynamic proxy is used as default and this problem will be there.)
+(But in CGLIB where interfaces arent declared to be implemented, if subclass is used, then this problem WONT BE THERE. But if interface it implements and has to be injected as interface type IN PURE SPRING, dynamic proxy is used as default and this problem will be there.)
 
 
 @Aspect
@@ -775,9 +758,9 @@ Examples:
 * execution(* send(int,..)) - Any method called send whose first parameter is an int type, and 0 OR more parameters may follow.
 * execution(void example.MessageServiceImpl.*(..)) - Any void method in the MessageServiceImpl class and in MOST CASES subclass object method access also triggers this.
   [HUGE DOUBT: Please refer foot NOTES for the massive explanation.]
-* execution(void example.MessageService.send(*)) - ANY METHOD from class implementing MessageService INTERFACE WILL TRIGGER by this exp.
+* execution(void example.MessageService.send(*)) - ANY send METHOD with 1 arg from class implementing MessageService INTERFACE WILL TRIGGER by this exp.
 
-Note: you cant start a expression phrase with '..' like atleast '*..' is required Like expression(* ..restaurant.*.*(..)) IS WRONG!!!
+Note: you cant start a expression phrase with '..' like atleast '*..' is required (except args) Like expression(* ..restaurant.*.*(..)) IS WRONG!!!
 Instead add a * just before .. to make it legal.
 
 
@@ -797,7 +780,7 @@ Eg: @AfterReturning(
 )
     public void afterReturningAdvice(JoinPoint joinPoint, ReturnType result) {}
 
-WARNING: APART FROM MATCHING METHOD's RETURN TYPE in expression, ASPECT ALSO WONT BE TRIGGERED IF THE PARAMETER pointed to by 'returning' in annotation, of this advice method parameter, IS NOT OF THE SAME RETURNTYPE AS THE METHOD MATCHED. [BUT POLYMORPHIC IMPLICIT ASSIGNMENT IS ACCEPTS AND ASPECT WILL TRIGGER if aspect returntype here is SUPERCLASS type of the one returned!]
+WARNING: APART FROM MATCHING METHOD's RETURN TYPE in expression, ASPECT ALSO WONT BE TRIGGERED IF THE PARAMETER pointed to by 'returning' in annotation, of this advice method parameter, IS NOT OF THE SAME RETURNTYPE AS THE METHOD MATCHED.[BUT POLYMORPHIC IMPLICIT ASSIGNMENT IS ACCEPTED AND ASPECT WILL TRIGGER if aspect returntype here is SUPERCLASS type of the one returned!]
 Also, the 'returning' variable name specified in annotation should EXACTLY match a variable name in this advice method ELSE RUNTIME EXCEPTION WILL OCCUR. Just that if type of that variable in this above advice method param is different means method wont be matched DESPITE EXPRESSION DOES MATCH OR NOT.
 
 
@@ -879,7 +862,7 @@ Annotations NAME-CHANGED from JUnit 4 changed to JUnit 5:
 @AfterClass	==> @AfterAll
 @Ignore		==> @Disabled
 
-(@DisplayName, @Nested, @ParameterizedTest , etc. are NEW annotations in JUnit5)
+(@DisplayName("sample test") [defines test name], @Nested [annotating inner classes as test classes using outer class fields etc], @ParameterizedTest , etc. are NEW annotations in JUnit5)
 
 Note: It's very EASY to MIX AND MATCH JUnit5 and OLDER JUnit annotations, IT WONT WORK!!! Please check if ALL annotations are FROM org.junit.jupiter...
 
@@ -923,10 +906,8 @@ void testMethod(String temp){}
 
 The above test is RUN 3 TIMES, EACH TIME WITH ONE VALUE FROM WHAT @ValueSource provides. (basically to avoid repetition this annotation is used)
 
-
 Multiple @Test methods in JUnit class WILL USE ONLY SAME ApplicationContext, not recreating each time as most beans are IMMUTABLE. So no need new.
  
-
 Including an OVERRIDING/Changed @CONFIGURATION as EMBEDDED in your Test Class for that class alone to use the changed config.class: -
 
 * First, DO NOT SPECIFY you Config.class in the @SpringJUnitConfig or the @ContextConfiguration annotations ON THE TEST CLASS. Just have @SpringJUnitConfig alone with no params.
@@ -1001,6 +982,7 @@ List<Customer> results = jdbcTemplate.query(someSqlStatementString,
 	public Customer mapRow(ResultSet rs, int row) throws SQLException {
 	    //map the current row elements to Customer obj. int row will have value 0 if its first element, then 1,.. so on, use only if needed.
 	    //The resultset POINTER WILL BE MOVED AUTOMATICALLY EACH TIME IN SEQUENCE, like mapRow() call is done INSIDE while(rs.next()){} !
+
 	}
 });
 
@@ -1026,7 +1008,7 @@ jdbcTemplate.update("UPDATE NAME SET last_name=?","John")
 
 jdbcTemplate.queryForMap("SELECT * FROM person WHERE id=?", 1) - Used to map query RETURNING ONE ROW into 1 Map<String, Object> object as return value.
 jdbcTemplate.queryForList("SELECT * FROM person") - Similar as above except returns multiple Maps as List<Map<String, Object>>
-
+0
 NOTE: Depending on the DB driver, the case of the column name (aka Key) in the map can vary, cant say if it will be in upper or lower case for sure. (But Spring course example shows in uppercase depiction)
 
 Domain Object Queries (Mapping of resultset to domain pojo objects using callback approach) :
@@ -1218,7 +1200,7 @@ So it can be simply run using the java -jar command.
 
 Using the mvn package command or the gradle assemble command, you can create the required jars:
 Eg: my-app.jar can be the executable "FAT" JAR,
-whereas my-app.jar.original can be the "usual" JAR. (has ONLY COMPILED CODE & without overhead of sping dependencies)
+whereas my-app.jar.original can be the "usual" JAR. (has ONLY COMPILED CODE WITHOUT SERVER EMBEDDED)
 
 The below dependenency mentioned inside a <plugin>...</plugin> alone, WILL CREATE A "FAT" JAR:
 <groupId>org.springframework.boot</groupId>
@@ -1232,11 +1214,9 @@ only as many as required, NOT doing it exactly like it would happen in the real 
 @SpringBootTest(classes=Application.class) - IT'S THE ANNOTATION you can use to RUN THE ENTIRE application like in the main app run.
 It's ideal for more general like Integration tests.
 
-@SpringBootConfiguration - Optionally, you DONT have to mention the classes param value in the @SpringBootTest annotation
-ONLY IF you have this annotation @SpringBootConfiguration on your TestConfiguration class where there is @ComponentScan, @EnableAutoConfiguration, etc.
 
 WARNING: If you use @SpringBootTest ALONE no params in your test class,
-YOU HAVE TO ENSURE the @SpringBootConfiguration annotated TestConfig class IS IN A PACKAGE ONE LEVEL HIGHER THAN the former.
+YOU HAVE TO ENSURE the @SpringBootConfiguration annotated TestConfig class IS IN SAME OR PARENT PACKAGE of the former.
 And ONLY ONE of such configuration classes can exist in a hierarchy, basically NO multiple PRIMARY configuration classes.
 (but generally multiple normal config classes allowed!)
 
@@ -1345,7 +1325,7 @@ Properties Overall Heirarchy (in order): -
 @ConfigurationProperties :
 
 If you want to map certain properties to a BEAN OBJECT, like these:
-reward.client.host=192.168.1.42
+rewards.client.host=192.168.1.42
 rewards.client.port=8080
 
 YOU CAN INJECT PROPERTIES INTO A BEAN OBJECT FOR ACCESS SOMEWHERE ELSE!
@@ -1502,7 +1482,7 @@ IMPORTANT: @SpringBootTest DOES NOT AUTOMATICALLY ENABLE AUTOCONFIG (like i inco
 	   BUT when no params were given to the test annotation, IT ENABLED, because IT SCANNED MAIN CLASS IN SAME PACKAGE!!!
 
 So remember that by default without any @EnableAutoConfiguration, or @SpringBootApplication which doesnt exclude the autconfig class, 
-Then actually @SpringBootTest DOES NOT DIFFER IN THIS ASPECT like ContextConfiguration. (@SpringBootConfiguration WONT ENABLE THIS!)
+Then actually @SpringBootTest DOES NOT DIFFER IN THIS ASPECT like ContextConfiguration. (@SpringBootConfiguration WONT BE ENABLED BY THIS!)
 
 
 @SpringBootApplication on the main class ALSO acts like @SpringBootConfiguration (default main config marker annotation),
@@ -1512,7 +1492,7 @@ If NO packages are specified for scanning components, ALL OF THE SAME + SUBPACKA
 If you dont supply config or any class to run() in main class, it assumes the same class as the one to be passed (not some weird scanning).
 
 The @SpringBootConfiguration is a marker annotation which is BASICALLY LIKE CONFIGURATION ENTRY POINT,
-Minus the 2 things offered by @SpringBootApplication: @EnableAutoConfiguration and @ComponentScan; Usuall not preferred over the application annotation as main class usually is main config also
+Minus the 2 things offered by @SpringBootApplication: @EnableAutoConfiguration and @ComponentScan; Usually not preferred over the application annotation as main class usually is main config also
 
 Can use this annotation in tests if you want a configuration entry point INSTEAD of main application class,
 Therefore you can avoid loading (for some reason) THE ENTIRE CONTEXT which main class might include by @Import or component scanning, etc.
@@ -1569,7 +1549,7 @@ HIBERNATE WILL BE THE IMPLEMENTATION for this as JPA is just made of interfaces.
 WARNING: @EnableJpaRepositories WONT BE NEEDED IF THIS DEPENDENCY IS INCLUDED, UNLESS there are rep. interfaces which
 ARENT IN SAME OR SUBPACKAGES as your main class, then needed TO SPECIFY THE OTHER PACKAGE LOCATION of the repositories.
 
-	@EnableTransactionManagement IS NOT EVEN NEEDED for default behaviour if this dependency is there! [ONLY APPLIES TO SPRINGBOOT, NOT PURE SPRING.]
+@EnableTransactionManagement IS NOT EVEN NEEDED for default behaviour if this dependency is there! [ONLY APPLIES TO SPRINGBOOT, NOT PURE SPRING.]
 
 If jpa is in classpath, springboot AUTOCONFIGURES:
 - DataSource,
@@ -1616,8 +1596,6 @@ spring.jpa.hibernate.ddl-auto=update # validate, create, create-drop are other l
 spring.jpa.show-sql=true    	     # Shows the SQL statements executed
 spring.jpa.properties.hibernate.format_sql=true # Formats the SQL to beautify. Any other hibernate property can be access like this.
 
-YES, JPA CAN be used for NO SQL DATABASES ALSO just like RDBMS ones!
-
 Instant Repositories: a feature..just annotate the Interface with @Repository [OR] interface SpringDataCommon's Repository<T,K> (or subtype)
 		      like CrudRepository<T,K>, JpaRepository<T,K> , etc, and define the keys & enable persistence,
 		      Springboot will implement it with CRUD operations support, including paging, custom queries if any, sorting etc.
@@ -1639,8 +1617,7 @@ Eg: findByOrderDateBetween(Date d1,Date d2)
 
 You can also SPECIFY CUSTOM SQL QUERY FOR A finder method. Example:
 @Query("SELECT c FROM Customer c WHERE c.email = ?1")
-public List<Customer> findByEmail(String email); // ?1 is REPLACED BY parameter here
-
+public List<Customer> findByEmail(String email); // ?1 is REPLACED BY parameter here, AND THIS IS A JPQL QUERY NOT SQL, nativeQuery=true annotation field/value should be set for normal SQL
 
 Note that JpaRepository<T,ID> extending interface supports WHICH EXTENDING Repository<T,ID> DOESNT SUPPORT:
 - Basic CRUD operations like save(),delete(),findById()
@@ -1675,9 +1652,13 @@ Usually hibernate will implement those predefined but youre injecting stub repos
 Eg: Here ONE-TO-MANY relationship field is set (this entity's field will be on the "ONE" side, mapping to many Beneficiary entries)
     the field name (here it's "ACCOUNT_ID") is looked for in the injected datatype's entity (Beneficiary) and is mapped.
     
-    @OneToMany
-    @JoinColumn(name = "ACCOUNT_ID")
-    private Set<Beneficiary> beneficiaries = new HashSet<Beneficiary>();
+Account code:
+	@OneToMany(mappedBy = "account") // "account" refers to the field name in the Child class, ACTS AS MIRROR TELLING DONT CREATE COLUMN HERE
+	private Set<Beneficiary> beneficiaries;
+Benificiary code:
+	@ManyToOne
+	@JoinColumn(name = "ACCOUNT_ID") // ACTUAL DB Column ACCOUNT_ID CREATED IN BENIFICIARY TABLE HERE
+	private Account account;
 
 Remember: Jpa could POSSIBLY convert simple datatype differences like int and Integer, etc between this entity and other entity's
 same named fields you try to join, but IT SHOULD PRACTICALLY BE SAME TYPE!
@@ -1694,7 +1675,6 @@ YES THE VALUES HAVE TO BE IN DATABASE. it starts using default constructor but v
 
 In SQL schema, identity keyword in table creation statements like "ID integer identity primary key"
 AUTOINCREMENTS by 1 and saves the value (default behaviour atleast).
-
 
 Remember: spring.sql.init.schema-locations & data-locations is the right property to set in springboot 2.x.x usually. (value is like "classpath:/xxx").
 
@@ -1714,7 +1694,7 @@ which is how the Controller only deals with receiving and sending requests/respo
 
 Warning: @Controller is for Controller classes whose methods/endpoints RETURN VIEWS, NOT JSON/XML!!!
 	 @RestController is the one whose methods return JSON/XML.
-	 BUT annotating @ResponseBody on the methods/CLASS ITSELF in @Controller class is BASICALLY EQUIVALENT TO just using @RestController alone. (so RestController just spares that extra @ResponseBody annotation , ofc you cant use it if you need a method to return a View)
+	 BUT annotating @ResponseBody on the methods/CLASS ITSELF in @Controller class is BASICALLY EQUIVALENT TO just using @RestController alone. (so RestController just spares that extra @ResponseBody annotation , ofc you cant use it so 1 or more0 methods can return a View)
 
 @GetMapping("/data") - specifies suburl for Get endpoint. Use it on class for a GENERAL base path applying to ALL GET requests (not others) in that class.
 @RequestMapping("/api") - same as above except general to ALL requests in controller.
@@ -1788,7 +1768,7 @@ you specify <artifactId>, and maybe <groupId> right? That is enough, just import
 Any PUBLIC classes, interfaces, beans, configuration, resources, AND TRANSITIVE dependencies declared in that subproject WILL BE INCLUDED! (No Source code ofcourse)
 
 
-REST (Representational State Transfer) usually doesn't use HttpSession, as REST is supposed to be Stateless, forcing client to maintain state.
+REST (Representational State Transfer) usually doesn't use HttpSession except Spring Security by default, as REST is supposed to be Stateless, forcing client to maintain state.
 Jakarta EE (successor of Java EE, basically javax.* to jakarta.*) is a collection of APIs and specifications for building scalable, secure, and transactional enterprise apps. It covers everything from web services, servlets, and REST APIs to dependency injection, security, and persistence. But Spring MVC DOES NOT IMPLEMENT JAX-RS.
 
 RestTemplate is used to build Rest clients in java.
@@ -1872,13 +1852,13 @@ RequestEntity<Item> request = RequestEntity.post(new URI(itemUrl))
 					.body(newItemObj);
 
 Ideally WebClient is preferred in cases of Streaming , and may evolve compared to RestTemplate, which wont, but that DOESN'T mean IT's depreciated.
-
+b
 The trailing variable params, last param(s) end of each restTemplate method like getForObject, postForObject, etc, CAN TAKE STRING of that val,
 OR the datatype meant to be used also (like Integer, or just the number as it will autobox), as the values to be substituted
 in the uri's "/{id}" part. Actually any type with a proper .toString() implementation WILL WORK apparently!
 
-For static rendering of resources in webapp, springboot looks in "classpath:static", basically static folder in resources folder,
-BUT IT WILL LOOK FIRST IN src/main/webapp if such a path exists!
+For static rendering of resources in webapp, springboot looks in META-INF/resources, resources, "classpath:static" , then "classpath:public", basically static folder in resources folder,
+BUT IN WAR PACKAGING, IT WILL LOOK FIRST IN src/main/webapp if such a path exists!
 
 Spring boot also CONVENIENTLY MAPS "/" endpoint to the index.html which SHOULD BE IN main/resources/static OR main/resources/public folders.
 
@@ -1904,7 +1884,7 @@ Dependencies inside starter dependency: JUnit(5),SpringBootTest,SpringTest,Asser
 
 webEnviroment option in @SpringBootTest annotation can be set to RANDOM_PORT / DEFINED_PORT (server.port prop it finds it uses)
 TO START WEB SERVER !
-MOCK (default, NO REAL webserver started, only mocked using MockMvc) and NONE (no web env) are the other options
+MOCK (default, NO REAL webserver started, only mocked using MockMvc IF YOU USE @AutoConfigureMockMvc) and NONE (no web env) are the other options
 
 WARNING: Simply using @SpringBootTest (which itself is optional while using @Test methods) WILL NOT START THE EMBEDDED WEB SERVER/CONTAINER. Only app and app context will be ready.
 	 You need to use this annotation to ensure it does start, or app is running in another terminal/etc :
@@ -1927,7 +1907,7 @@ Mvc test framework does NOT NEED to run web server container to test the control
 
 For MOCK option value:
 @SpringBootTest(webEnvironment = WebEnvironment.MOCK)
-@AutoConfigureMockMvc //on test class these both should be used, can inject MockMvc bean directly
+@AutoConfigureMockMvc //MANDATORY FOR INJECTION MockMvc EXCEPT In @WebMvcTest
 
 Code should be like: (mock server, not a real one)
      mockMvc.perform( get("/api/user/{id}" , "1").accept(MediaType.APPLICATION_JSON)) // Can use URI substitution like restTemplate methods; post(), put(), even head(), patch(), options() [all 8] are supported
@@ -2024,7 +2004,6 @@ Authorization: Deciding if a principal is allowed to access a resource.
 
 Authority: Permission or credential enabling access (such as role)
 
-
 All secured resources (as configured) will have to be accessed by execution thread through SecurityContext.
 
 AuthenticationManager checks for Valid credentials, if found to be correct, 
@@ -2057,7 +2036,7 @@ The Spring Security Filters can have more, but usual basic filters are:
 * LogoutFilter - Clears SecurityContextHolder when logout requested.
 * UsernamePasswordAuthenticationFilter - Puts Authentication into SecurityContext on login request
 * ExceptionTranslationFilter - Converts SpringSecurity exceptions into HTTP response or redirect.
-* AuthorizationFilter - Authorizes web requests based on config attributes and authorities.
+* AuthorizationFilter/FIlterSecurityInterceptor - Authorizes web requests based on config attributes and authorities.
 
 Remember: Not all of these filters always no something, like in some cases literally SecurityContextPersistenceFilter and AuthorizationFilter run.
 
@@ -2254,7 +2233,7 @@ spring-boot-starter-security: Just including this dependency will cause default 
 			      For logout, you just access the /logout suburl and click yes on the button in webpage to logout successfully. (Reloading page doesnt affect the logged in or out status as using the JSESSIONID cookie session is recovered)
 
 
-In @Test methods for spring boot security, you can make test do api calls with TestRestTemplate using restTemplate.withBasicAuth(username,pswd)
+In @Test methods for spring boot security, you can make test do api calls with TestRestTemplate using testRestTemplate.withBasicAuth(username,pswd)  [NORMAL restTemplate DOESNT HAVE THIS!]
 In mockMvc 's case this should be done: mockMvc.perform(get("/...")).with(httpBasic("user", "password"))) 
 
 @WithMockUser(username = "user", password = "user", roles={"USER"}): Similar to basicAuth, except simply annotating this on @Test will
@@ -2338,7 +2317,7 @@ Enabled means endpoint is created and req bean(s) is in application context. Lik
 All endpoints are "Enabled" BY DEFAULT EXCEPT /shutdown suburl.
 
 Exposed means endpoint is accessible via JMX or HTTP.
-HTTP by default exposes only /health (/into too in springboot 2.x.x but not in 3.x.x) , whereas JMX by default exposes ALL ENABLED ENDPOINTS.
+HTTP by default exposes only /health (/info too in springboot 2.x.x but not in 3.x.x) , whereas JMX by default exposes ALL ENABLED ENDPOINTS.
 
 (JMX capability is only available when spring.jmx.enabled=true,
 Http capability is ONLY available when using Spring MVC, WebFlux, or Jersey)
@@ -2422,9 +2401,9 @@ In /actuator/metric/reward.summary , output json will be like: { "name":"reward.
 								 "baseUnit":"dollars",
 								 "measurements": [
 											{ "statistic":"COUNT", "value":3 },
-											{ "statistic":"TOTAL", "value":13 },
+											{ "statistic":"TOTAL", "value":13 },...]
 								 "availableTags":[]
-								]}
+								}
 
 Counter: 
 Counter counter = meterRegistry.counter("account.fetch","type","fromCode"); //1st param-Metric name, 2nd & 3rd param is key-value tag as disussed before
@@ -2636,7 +2615,7 @@ RandomSubClass.randomMethod() was called!
 THE SECTION OF CHANGE IS OVER
 
 
-MORAL OF THE STORY: Normally, subclass methods whther overriding or not, as long as the superclass/interface declares same signature method, THEN IT WILL TRIGGER ASPECT HOWEVER YOU INJECT IT!
+MORAL OF THE STORY: Normally, subclass methods whether overriding or not, as long as the superclass/interface declares same signature method, THEN IT WILL TRIGGER ASPECT HOWEVER YOU INJECT IT!
 
 BUT IF YOU HAVE SPECIFIED ANNOTATION in the filter PointCut of the aspect, THEN BEHAVIOUR IS CHANGING. EVEN IF YOU USE SUBCLASS OBJECT, If subclass object injected, is used to
 ACCESSING THE SUPER CLASS METHOD (SubClass doesnt have that method), THEN IT WORKS SAME!
@@ -2688,7 +2667,7 @@ FINALLY PROBLEM WAS HOW I EXECUTED UNIT TEST OF 1 Test ALONE : mvn -pl 22-aop -D
 Also, anything wrong with JoinPoint expression (like @Before("execution(* *(..))") IS NOT CORRECT) , it will THROW EXCEPTION AS IF beanInitialization failed for the Aspect class.
 SO ENSURE TO CHECK IT's correct or not.
 
-
+CORRECT WAY TO SPECIFY ANY AND ALL METHODS IS : "execution(* *.*(..))"		[Should have wildcard MANDATORILY in this case for class and method too]
 
 
 
@@ -2704,7 +2683,7 @@ Annotation 	Function					Origin (Dependency)		Supported by Default?
 @Mock		Creates a mock object (no Spring context).	mockito-core			No
 @Spy		Creates a partial mock/spy (no Spring context).	mockito-core			No
 @InjectMocks	Injects @Mock fields into the test class.	mockito-core			No
-@Captor		Captures method arguments for verification.	mockito-core
+@Captor		Captures method arguments for verification.	mockito-core			No
 @ExtendWith	Required to use MockitoExtension.class.		junit-jupiter-api		Yes (junit is considered default with springboot typically speaking)
 @MockBean	Mocks a Spring Bean and adds to Context.	spring-boot-test		Yes (Deprecated in Boot 3.4)
 @SpyBean	Spies on a Spring Bean in the Context.		spring-boot-test		Yes (Deprecated in Boot 3.4)
@@ -2724,16 +2703,18 @@ All below are allowed if its a system property:
 #{environment['my.prop']} — Correct (Property access via Environment).
 #{environment.getProperty('my.prop')} — Also Correct (Calling a method on the environment object).
 
-Test Category	Context Scope	Setup Annotation			Mocking Annotations			Wiring / Injection Mechanism		Source Dependency	Automatic Reset?	Exam Logic / Key Behavior
-Unit Test	None (POJO)	@ExtendWith(MockitoExtension.class)	@Mock, @Spy, @InjectMocks, @Captor	Manual via @InjectMocks			mockito-core		No			Fastest; isolates logic; zero Spring Beans/Context loaded.
-Integration	Full (Total)	@SpringBootTest	@MockBean, @SpyBean	@Autowired 				from AppContext				spring-boot-test	Yes			Starts entire app; @MockBean replaces real beans in Context.
-Web Slice	Partial (Web)	@WebMvcTest(Ctrl.class)	                @MockBean				@Autowired (MockMvc)			spring-boot-test	Yes			Loads only Controllers; Services/Repos must be mocked.
-Data Slice	Partial (DB)	@DataJpaTest				@MockBean (optional)			@Autowired (Repositories)		spring-boot-test	Yes			Loads Repos + H2 DB; uses TestEntityManager.
-JSON Slice	Partial (JSON)	@JsonTest				@Mock					Manual Constructor/Setter		spring-boot-test	No			Tests Jackson/JSON serialization/deserialization only.
-Client Slice	Partial (REST)	@RestClientTest(Svc.class)		@MockBean 				@Autowired (Service)			spring-boot-test	Yes			Tests REST clients; provides MockRestServiceServer.
-Legacy/Core	Manual		@SpringJUnitConfig			None (Manual Mocking)			@ContextConfiguration			spring-test		No			Framework way; loads only specified @Configuration classes.
-Boot 3.4+	Any Boot	@SpringBootTest / Slices		@MockitoBean, @MockitoSpyBean		@Autowired from AppContext		spring-test*		Yes			Official replacement for @MockBean / @SpyBean.
 
+
+
+Test Category	Context Scope	Setup Annotation			Mocking Annotations		Wiring / Injection Mechanism	Source Dependency	 Automatic Reset?	Exam Logic / Key Behavior
+Unit Test	None (POJO)	@ExtendWith(MockitoExtension.class)	@Mock, @Spy, @InjectMocks	Manual via @InjectMocks		mockito-core		 No			Fastest; isolates logic; zero Spring Beans/Context.
+Integration	Full (Total)	@SpringBootTest				@MockBean, @SpyBean		@Autowired from Context		spring-boot-starter-test Yes			Starts entire app; @MockBean replaces beans in Context.
+JSON Slice	Partial (JSON)	@JsonTest				@MockBean, @SpyBean		@Autowired (JacksonTester)	spring-boot-starter-test Yes			Tests Jackson serialization; loads ObjectMapper & @JsonComponent.
+Web Slice	Partial (Web)	@WebMvcTest(Ctrl.class)			@MockBean			@Autowired (MockMvc)		spring-boot-starter-test Yes			Loads only Controllers; Services/Repos must be mocked.
+Data Slice	Partial (DB)	@DataJpaTest				@MockBean (optional)		@Autowired (Repositories)	spring-boot-starter-test Yes			Loads Repos + H2 DB; uses TestEntityManager.
+Client Slice	Partial (REST)	@RestClientTest(Svc.class)		@MockBean			@Autowired (Service)		spring-boot-starter-test Yes			Tests REST clients; provides MockRestServiceServer.
+Legacy/Core	Manual		@ContextConfiguration			None (Manual Mocking)		@Autowired (Explicit Config)	spring-test		 No				Framework way; loads only specified @Configuration classes.
+Boot 3.4+	Any Boot	@SpringBootTest / Slices		@MockitoBean, @MockitoSpyBean	@Autowired from Context		spring-boot-starter-test Yes			Official replacement for @MockBean / @SpyBean.
 
 These enable annotations ARE NOT MANDATORY as long as dependencies are there correctly:
 
@@ -2949,3 +2930,407 @@ SecurityContext is still created (might be anonymous)
 CSRF protection still applies (unless explicitly disabled)
 Other security filters (CORS, headers, session management) still execute
 Custom filters in the chain still run
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=========================================================================================================================
+-------------------------------------------------------------------------------------------------------------------------
+
+Last minute REVISIONS:
+
+Repository<T, ID> (Marker Interface) <- CrudRepository<T, ID> (CRUD operations) <- PagingAndSortingRepository<T, ID>(pagination + sorting) <- JpaRepository<T, ID>(JPA-specific + batch ops)
+
+Vanilla Spring uses jdk proxies as first preference but Springboot tries cglib first as spring.aop.proxy-target-class=true as default value.
+WARNING: NEVER MIX AND MATCH INTERFACE AND IMPL CLASS INJECTION POINTS FOR THE SAME BEAN. like it creates 1 type proxy and it HAS to be compatible with all injection points. Dont confuse.
+
+@TestPropertySource when PLAIN FILENAME WITHOUT SLASH is given then, it assumes file is IN SAME PACKAGE/FOLDER AS THE TEST CLASS.
+IN ALL OTHER CASES IN BOTH THIS AND @PropertySource WITHOUT ANY PREFIX given and with/without SLASH,
+CLASSPATH RESOURCES FOLDER IS SEARCHED FOR IT.
+
+Note: MOST properties in springboot which take paths ASSUME you mean CLASSPATHS, with exceptions of few:
+      @TestPropertySource (as mentioned above) , logging.file.name (Current Working Directory if no slash, Root of OS Drive if slash)
+      spring.mvc.view.prefix : ALWAYS src/main/webapp/WEB-INF/  (and ResourceLoader.getResource() ALWAYS based on current context absolute or relative path it takes)
+
+WARNING: Single quotes '' INSIDE environment INSIDE SpEL expression IS MANDATORY whereas OPTIONAL INCASE OF systemProperties and systemEnvironment, BUT WONT HURT.
+
+AND YES, EVEN IF FUNCTION CALL HAPPENS AND REQUIRED DOUBLE QUOTES in #{...},
+\".....\" OR jusr single quotes BOTH are allowed in SpEL 
+
+@Value("${daily.limit : 100000}") IS EQUIVALENT TO @Value("#{environment['daily.limit'] ?: 100000}")
+@Value("#{T(java.lang.Math).random() * 100}") 
+
+WARNING: Annotating @Autowired(required = false) on multiple constructors means IT TAKES THE ONE WITH MOST NUMBER OF PARAMETERS! (GREEDY logic)
+[It will try to satisfy largest constructor and move downward, IT WILL THROW RUNTIME ERROR IF IT HAS TO DECIDE BETWEEN 2 CONSTRUCTORS WITH SAME PARAMETER COUNT]
+
+
+Spring Bean Lifecycle (Corrected for 2.7 Exam):
+
+1. Load & Process Bean Definitions
+@Configuration classes processed
+@Component classes scanned
+Bean definitions added to BeanFactory (ApplicationContext extends BeanFactory)
+
+2. BeanFactoryPostProcessor Phase (Definition-level)
+All BeanFactoryPostProcessor beans run (can modify/read bean definitions before any objects exist)
+Example: PropertySourcesPlaceholderConfigurer resolves ${...} in the blueprints.
+
+3. Bean Creation (Instantiation & Population)
+Constructor Injection: Bean is instantiated (the only injection during object creation).
+Field & Setter Injection: Performed by specialized BeanPostProcessors (like AutowiredAnnotationBeanPostProcessor).  [YES THIS RUNS BEFORE THE OTHER BEAN POSTPROCESSORS].
+Field injection happens before Setter injection.
+
+4. Awareness Phase
+Spring calls "Aware" interfaces if implemented (e.g., BeanNameAware, BeanFactoryAware, ApplicationContextAware).
+This is where the bean is "told" about the container.
+
+5. BeanPostProcessor Phase [Initializing PHASE]
+postProcessBeforeInitialization (Hook for BPPs)
+
+Initialization Methods (Strict Order):
+@PostConstruct (JSR-250) - Always runs first.
+afterPropertiesSet() (InitializingBean interface).
+init-method (Defined in @Bean annotation) - Always runs last.
+
+postProcessAfterInitialization (Hook for BPPs)
+CRITICAL: This is where AOP Proxies are created (e.g., for @Transactional, @Async, @Cache, @Retryable, @PxxAuthorize, etc).
+
+6. Bean Usage
+Beans are ready for use. Singleton beans are stored in the ApplicationContext cache.
+
+7. Bean Destruction (Destruction PHASE)
+Note: Only for Singleton beans; Spring does not manage destruction for Prototype beans.
+@PreDestroy (JSR-250)
+destroy() (DisposableBean interface)
+destroy-method (Defined in @Bean annotation)
+
+
+The "Final Method" Gotcha: If the class is not final, but the specific method you want to proxy (like a @Transactional method) is final, the application will not fail to start. However, the proxy will simply skip that method. Your transaction won't start, and you'll have a silent, runtime bug.
+
+YES, JDK PROXY WILL BE THE FALLBACK EVEN IF : spring.aop.proxy-target-class=true
+@EnableAspectJAutoProxy(proxyTargetClass = true) : the Boolean value attribute is optional and TRUE BY DEFAULT INDICATING CGLIB, if specified FALSE, then JDK proxy used.
+[This annotation is NOT MANDATORY IF STARTER IS INCLUDED]
+
+
+1. Functional & Behavioral Engines (The "On-Switches")
+These infrastructure engines stay OFF by default. Simply having the starter on the classpath is not enough to make the annotations on your methods work.
+Feature		  Compulsory Annotation						Result if Missing
+Caching		  @EnableCaching						@Cacheable methods run normally; no data is cached.
+Scheduling	  @EnableScheduling						@Scheduled methods never fire; heartbeat never starts.
+Async Execution	  @EnableAsync							@Async methods run synchronously on the caller's thread.
+Config Properties @ConfigurationPropertiesScan	OR				@ConfigurationProperties classes are not registered as beans.
+		  @EnableConfigurationProperties(MyProps.class) OR @Component
+XML Config	  @ImportResource						External XML bean definitions (.xml) are not loaded.
+
+2. Full-Context Testing Triggers (Used with @SpringBootTest)
+When running a full integration test, Spring Boot refuses to "pollute" the context with test-only beans. You must manually trigger their creation/injection.
+Test Tool to Inject	Compulsory Annotation		Context Requirement
+MockMvc			@AutoConfigureMockMvc		Only if using @SpringBootTest.
+WebTestClient		@AutoConfigureWebTestClient	Only if using @SpringBootTest.
+In-Memory DB		@AutoConfigureTestDatabase	To override a real DB in @SpringBootTest.
+TestEntityManager	@AutoConfigureTestEntityManager	To use the JPA helper in @SpringBootTest.
+JacksonTester		@AutoConfigureJsonTesters	To use JSON helpers in @SpringBootTest.
+REST Docs		@AutoConfigureRestDocs		To generate snippets in any test.
+
+3. Messaging, Cloud & Remote Discovery
+These starters provide libraries, but the "Scanner" that finds your interfaces or activates the server role must be ignited.
+Role / Feature	 Compulsory Annotation	Why it's an Exception
+Feign Clients	 @EnableFeignClients	Won't scan for or implement @FeignClient interfaces.
+Config Server	 @EnableConfigServer	The app stays a regular app; won't serve config.
+Service Registry @EnableEurekaServer	Won't activate the Eureka dashboard or registry logic.
+Stream Binding	 @EnableBinding		Required to link interfaces to message brokers.
+
+4. Slice Test Identity (The "Exclusives")
+These are compulsory because you cannot get their specific behavior or helpers (like MockMvc or TestEntityManager) without using the specific annotation.
+Slice Type	Compulsory Annotation	Key Benefit / Helper Provided
+Web Slice	@WebMvcTest		Auto-configures MockMvc (no extra annotation needed).
+Data Slice	@DataJpaTest		Auto-configures TestEntityManager and any Embedded Database (H2, HSQL, Derby).
+JSON Slice	@JsonTest		Auto-configures JacksonTester.
+REST Client	@RestClientTest		Auto-configures MockRestServiceServer.
+
+
+TLDR:
+Caching (@EnableCaching)
+Scheduling (@EnableScheduling)
+Async (@EnableAsync)
+Circuit Breakers (@EnableCircuitBreaker)
+
+in @DataJpaTest or an jdbc test, @Transactional is optional,
+But in @SpringBootTest its mandatory FOR TRANSACTIONAL BEHAVIOUR thats all.
+
+
+Feature / Tool 		In @SpringBootTest					In Slice Tests
+MockMvc			MANDATORY @AutoConfigureMockMvc except in webMvcTest 	AUTO-CONFIGURED (In @WebMvcTest)
+TestEntityManager	MANDATORY @AutoConfigureTestEntityManager		AUTO-CONFIGURED (In @DataJpaTest)
+In-Memory DB		MANDATORY @AutoConfigureTestDatabase			AUTO-CONFIGURED (In @DataJpaTest)
+JacksonTester		MANDATORY @JsonTest (or manual bean)			AUTO-CONFIGURED (In @JsonTest)
+MockRestServiceServer	MANDATORY @RestClientTest (or manual)			AUTO-CONFIGURED (In @RestClientTest)
+
+
+
+AOP advice format: [Modifiers] ReturnType [ClassType] MethodName (Arguments) [throws ExceptionType]
+
+REMEMBER: execution(* *(..)) [OR] execution(* *.*(..)) DOES NOT MATCH EVERY SINGLE METHOD, you didn't give package or class name so it ASSUMES THE ROOT FOLDER/PACKAGE !
+execution(* *..*.*(..)) IS THE TRUE MATCH ALL EXPRESSION !
+
+Return type of @Around method CAN be the specific type OR just a generic OBJECT TYPE ALSO (TESTED, no issue) !
+Same reason thats why pjp.proceed() RETURNS Object TYPE!
+
+@SpringBootTest is the equivalent APPROXIMATELY of @ExtendWith(SpringExtension.class) and @BootstrapWith(SpringBootTestContextBootstrapper.class)
+
+@SpringJUnitConfig(SystemTestConfig.class) IS THE COMBINATION OF THE ABOVE 2 ANNOTATIONS (@ExtendWith(SpringExtension.class) [enables junit 5 testing framework, DI bean injection etc] and @ContextConfiguration(classes={SystemTestConfig.class})).
+
+
+Including an OVERRIDING/Changed @CONFIGURATION as EMBEDDED in your Test Class for that class alone to use the changed config.class: -
+
+* First, DO NOT SPECIFY you Config.class in the @SpringJUnitConfig or the @ContextConfiguration annotations ON THE TEST CLASS. Just have @SpringJUnitConfig alone with no params.
+* Inside the class body, have a static class like below TO IMPORT ANOTHER CONFIGURATION AND OVERRIDE ONE BEAN ALONE
+(incase you want a different Bean instance/behaviour FOR RUNNING THIS CLASS ALONE, this can let you specify/redeclare for those one or 2 Beans)
+
+@SpringJUnitConfig  //DO NOT SPECIFY Config class here or you cant override some beans alone or this test class.
+public class SampleJUnitTests {
+   ...
+   ...
+   @Configuration
+   @Import(SystemTestConfig.class)
+   static class TestConfiguration{
+	@Bean public Datasource dataSource(){...} //REST of the BEANS ARE TAKEN FROM SystemTestConfig.class EXCEPT Datasource
+   }
+}
+
+In Normal Springboot application, YOU CANNOT INJECT @Autowired to SPECIFIC PARAMs in a method alone instead of whole method,
+like @Autowired on top of constructors, setters, fields, OR EVEN NORMAL methods also its allowed (Not recommended but allowed, called onces after initialization), BUT NOT INDIVIDUAL METHOD PARAMS.
+BUT IN JUnit5 ALONE, for a @Test annotated function, I CAN USE @Autowired ON A @Test METHOD PARAMETER(s) to inject as dependencies, as usually these methods DONT have any params.
+
+the .query() method accepts ALL 3 callback obj types,
+		BUT .queryForObject() ONLY ACCEPTS RowMapper CALLBACK, not other 2 !!!
+		REST OF THE 2 QUERY METHODS (list and map), and update() DO NOT ACCEPT SUCH CALLBACKS !
+And other than RowMapper; ResultSetExtractor<T> and RowCallbackHandler<T> NEED TYPECASTING AS THEY HAVE ONLY 1 PARAM AND ITS VAGUE between the available overloaded options.
+
+
+.query() NEEDS SOME CALLBACK MANDATORILY (and doesnt ever take a ReturnType.class param)
+WHEREAS .queryForObject DOES NOT NEED mapper BUT you have to give EITHER MAPPER OR a [NON-USER-DEFINED] ReturnType.class as parameter. (coz ReturnType if custom class then NEEDS MAPPER)
+
+TransactionTemplate is programmatic MANUAL WAY to do transactions without annotations.
+
+spring.sql.init.schema-locations=<path to your schema SQL file>
+spring.sql.init.data-locations=<path to your data SQL file>
+
+
+JAR vs WAR: BOTH of their thin (.original) JAR has NO embedded server and the FAT one has, BUT in JAR its a standalone application BUT WAR files are like SUPPLIMENT FILES TO THE MAIN SERVER, which EXTRACTS IT and runs in the container. (And STATIC RESOURCES FOR WAR in src/main/webapps BEFORE LOOKING IN places which are searched for JARs too:
+classpath:/META-INF/resources/ (Highest Priority)
+classpath:/resources/					(THIS IS NOT THE src/main/resources, THIS IS AN ADDITIONAL FOLDER like src/main/resources/resources, DONT CONFUSE!!!)
+classpath:/static/ (The Industry Standard)
+classpath:/public/ )
+
+protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) { //in MyApplication.java for WAR packaging as server looks for this
+        return builder.sources(MyApplication.class);
+}
+
+WARNING: If you use @SpringBootTest ALONE no params in your test class,
+YOU HAVE TO ENSURE the @SpringBootConfiguration annotated TestConfig class IS IN SAME OR PARENT PACKAGE of the former.
+And ONLY ONE of such configuration classes can exist in a hierarchy, basically NO multiple PRIMARY configuration classes.
+(but generally multiple normal config classes allowed!)
+
+environment.getProperty("server.port") or  @Value("${my.app.name}") can ONLY be used with snakeyaml.jar inside spring-boot-starter-logging dependency is used)
+
+application.properties is looked for in priority in following (2x4 files or x times EVEN MORE IF PROFILE SPECIFIC ARE THERE):
+* /config subdirectory of the working directory (config subdir in the directory where executable jar is executed in target folder)
+* The working directory (same directory as executable jar in target folder)
+* config package in classpath (eg: src/main/resources/config/application.properties IN SRC, in JAR it will NOT be under resources ofcourse)
+* classpath root (eg: src/main/resources/application.properties IN SRC folder)
+
+NOTE: .properties in same location OVERRIDES .yaml, and PROFILE-SPECIFIC file IN EQUAL PRIORITY FOLDER ALONE overrides GENERAL PROPERTIES !!!
+
+Properties Overall Heirarchy (in order): -
+
+1. Devtools settings
+2. @TestPropertySource and @SpringBootTest properties
+3. Command line arguments
+4. SPRING_APPLICATION_JSON (inline JSON properties).
+5. ServletConfig / ServletContext parameters.
+6. JNDI attributes from java:comp/env
+7. Java System properties
+8. OS environment variables
+9. Profile-specific application properties
+10. Application properties / YAML
+11. @Property Source files
+12. SpringApplication.setDefaultProperties.
+
+
+.....
+..... (Common properties here always loaded, till the 3 dashes is encountered)
+---
+spring:
+  profiles: local
+  datasource:
+    url: .......
+---
+spring:
+  profiles: cloud
+  datasource:
+    url: .......
+
+@ConfigurationProperties class MUST have SETTERS OR VALUES WONT BE ASSIGNED EVEN IF FIELDS ARE PUBLIC (atleast SEE IF THEY HAVE COMMENT INDICATING MORE CODE IS THERE)
+
+Default Pooled DataSource for springboot 1.x.x is Tomcat and for 2.x.x its Hikari. (can be in sp-bt-starter-jdbc or ..-..-starter-jpa)
+Apache Commons DBCP2 is the backup if both dependencies arent present. (HikariCP then Tomcat JDBC then Commons DBCP2 then Oracle UCP)
+Can use spring.datasource.type to pick pool explicitly.
+
+
+Be careful! spring-boot-starter-jdbc (Classic JDBC) is different from spring-boot-starter-data-jdbc. Spring Data JDBC will provide the magic proxies for interfaces, similar to JPA, but without the complexity of Hibernate.
+
+Note: ALL INBUILT METHODS OF JPA AND CRUD REPOSITORY ARE @TRANSACTIONAL (for findXX() its readOnly rest just @Transactional),
+      Only CUSTOM DEFINED METHODS NEED @Transactional.
+
+Note: CLASS IMPORTED USING @IMPORT() DONT THEMSELVES HAVE TO BE LABELLED A @Configuration class!!! 
+
+@Order is GENERAL PURPOSE AND CAN ALSO APPLY TO Aspects (OUTERMOST EXECUTION aspect will be @Order(1) annotated), Filters (first priority to RUN THAT FILTER FIRST and so on), Runners (runs first priority runner and in order so on)
+Whereas @AutoConfigureOrder is used to specify Autoconfig class order but its not that strong and recommended like @AutoConfigureAfter or XXBefore. (Architecturally more correct and RECOMMENDED TO USE)
+
+Also, Ordered inteface's int getOrder() method impl for a bean HAS MORE PRECEDENCE THAN what @Order annotation says.
+
+
+WARNING: findXXBY... WHATEVER the XX is except First,Distinct,TopN,etc, THAT PART BEFORE BY AND AFTER find/get/whatever WILL BE IGNORED!!!
+	 And there is NO findLast...() SURPRISINGLY as ig they felt its REDUNDANT AND ORDERBYXXDesc WITH findFirst can help instead.
+
+The syntax and features provided are fully supported in Spring Boot 2.7 (which uses Spring Data JPA 2.7).
+Here are the specific method signature details and capabilities for this version:
+
+1. Core Method Signatures
+In 2.7, these "prefixes" are interchangeable and produce the same query result:
+find…By, read…By, get…By, query…By, stream…By. 
+
+2. Supported Operators (<Op>)
+These are the standard "Keywords" for query derivation in 2.7: 
+Equality: Is, Equals, (or empty).
+Logical: And, Or.
+Comparison: Between, LessThan, LessThanEqual, GreaterThan, GreaterThanEqual, After, Before.
+Null Checks: IsNull, IsNotNull, NotNull.
+Pattern Matching: Like, NotLike, StartingWith, EndingWith, Containing.
+Collections: In, NotIn.
+Boolean: True, False.
+Case Sensitivity: IgnoreCase (for one property) or AllIgnoreCase (for all). 
+
+3. Result Modifiers
+Uniqueness: findDistinctBy....
+Limiting: findFirstBy... or findTop<N>By... (e.g., findTop10By).
+Ordering: OrderBy<Property>Asc or OrderBy<Property>Desc at the end of the name. 
+
+4. Return Types for 2.7
+Your interface methods in 2.7 can return: 
+Single Items: T (your entity), Optional<T>, or void.
+Collections: List<T>, Set<T>, Collection<T>, Stream<T>.
+Paging/Sorting: Page<T> or Slice<T> (requires a Pageable parameter).
+Async: Future<T>, CompletableFuture<T>, ListenableFuture<T>
+
+
+You can also SPECIFY CUSTOM SQL QUERY FOR A finder method. Example:
+@Query("SELECT c FROM Customer c WHERE c.email = ?1")
+public List<Customer> findByEmail(String email); // ?1 is REPLACED BY parameter here, AND THIS IS A JPQL QUERY NOT SQL, nativeQuery=true annotation field/value should be set for normal SQL
+
+You can use PLACEHOLDERS in native query SAME AS ABOVE OR ALSO THE BELOW WAY:
+
+Named Parameters (Recommended): Uses the : prefix.
+	@Query(value = "SELECT * FROM users WHERE email = :email", nativeQuery = true)
+
+Note: You must use the @Param("email") annotation on the method argument if the names don't match or for older Java versions. Spring Data JPA: Native Queries.
+
+RETURN TYPES SUPPORTED IN NATIVE SQL QUERY:
+
+Return Type			Supported in Native SQL?	Why / How it works
+Entity (e.g., Customer)		YES				Only if you SELECT * and the columns match the @Entity fields exactly.
+List<Object[]>			YES				The default. Each array represents a row of raw data.
+List<Map<String, Object>>	YES				Uses column names as keys.
+Projection Interface(w getters)	YES				Best Practice. Spring creates a proxy for the interface.
+POJO (e.g., UserDTO)		NO				The Trap. Native SQL does not support SELECT new ... like JPQL does.
+
+
+
+Account code:
+	@OneToMany(mappedBy = "account") // "account" refers to the field name in the Child class, ACTS AS MIRROR TELLING DONT CREATE COLUMN HERE
+	private Set<Beneficiary> beneficiaries;
+Benificiary code:
+	@ManyToOne
+	@JoinColumn(name = "ACCOUNT_ID") // ACTUAL DB Column ACCOUNT_ID CREATED IN BENIFICIARY TABLE HERE
+	private Account account;
+
+
+REST IS interoperable (can work with services of other languages as its just JSON AND XML to outside perspective)
+
+
+1. The "Self-Invocation" with @Async
+We saw this for @Transactional (Q8), but the exam loves to ask if @Async works when a method in the same class calls it.
+Fact: It fails (runs synchronously) for the same reason: the Proxy is bypassed.
+
+2. DispatcherServlet "Special Beans"
+The exam often asks which beans the DispatcherServlet looks for to do its job.
+The List: HandlerMapping, HandlerAdapter, HandlerExceptionResolver, and ViewResolver.
+
+3. Spring Security hasRole vs hasAuthority
+The Trap: hasRole("ADMIN") looks for a granted authority named ROLE_ADMIN.
+The Difference: hasAuthority("ADMIN") looks for the exact string ADMIN without the prefix.
+
+
+94) What is the correct order of execution for a Spring Boot application starting up?
+A. ApplicationRunner -> CommandLineRunner -> ApplicationContext refreshed.
+B. ApplicationContext refreshed -> ApplicationRunner -> CommandLineRunner. 	[CORRECT, ORDER BETWEEN RUNNERS IS UNPREDICTABLE UNLESS @Order or Ordered interface used]
+C. CommandLineRunner -> ApplicationRunner -> ApplicationContext refreshed.
+D. BeanFactoryPostProcessor -> CommandLineRunner -> BeanPostProcessor.
+
+
+Question: Which two statements are true regarding the @Qualifier annotation? (Choose two.)
+A. It can be used to create custom annotations (Meta-annotations).
+B. It can only be used with the name of the bean.
+C. It can be used on a class to resolve conflicts between multiple implementations.
+D. It can be used on a constructor parameter.
+E. It is required even if only one bean of a type exists.
+
+Answer: A and D, B says it can only be used with name of bean, BUT IT CAN BE USED ON VARIABLE AND ON COMPONENT/BEAN DECLARATION LIKE @Qualifier("tagNAME") TOO!
+	Sounds wrong but when you JUST CALL @Qualifier with no params on variable, after trying to variable match, it HAS TO CHECK if bean declaration HAS TAG NAME as shown here.
+	C CLEARLY SAYS USED ON A CLASS TO RESOLVE CONFLICTS, @Qualifier ONLY USED ON CLASS EVER TO ADD TAG NAME (same tag should be field name when @Qualifier is used on field PLAINLY with no param so it matches DESPITE no param in annotation NOR matching field name to bean name)
+	Only @Primary makes sense there.
+
+
+
+/BOOT-INF/classes (compiled classes stored in JAR)
+/WEB-INF/classes (compiled classes stored in WAR)
+
+
+JSR-250: Lifecycle ( @PostConstruct, @Predestroy, @Resource ).
+JSR-330: Standard DI ( @Inject, @Named, @Singleton ).
+JSR-338: Entity related ( @Entity, @Table, @Id, @GeneratedValue )
+JSR-380: Validation ( @NotNull, @Min, @Max, @valid ).
+Spring Native: EVERYTHING ELSE (@Autowired, @Service, @Transactional).
+
+
+MockMvc IS NOT INJECTED AUTOMATICALLY WITHOUT @AutoConfigureMockMvc EXCEPT in @WebMvcTest ALONE !!
+
+Examples of annotations WHICH ARE BASED ON PROXY AND WONT WORK AS EXPECTED IN INTRA-CLASS METHOD CALLS!
+
+@Transactional , @Async 		  (The method will run synchronously on the caller's thread instead of the TaskExecutor thread),
+@Cacheable / @CacheEvict / @CachePut      (Spring will not check the cache; it will simply execute the method logic every time),
+@PreAuthorize / @PostAuthorize / @Secured (Security checks are skipped. A user with no roles could potentially execute a restricted method if it's called internally),
+@Retryable			          (The method will not retry on failure)
+
+
+@PreAuthorize("@securityService.check(#id)")
+public void deleteOrder(Long id) { ... }
+
+@ is used for ACCESSING BEAN In security methods and filters, # is for method params, and authentication or principal objects just like that is enough.
+
+EXCEPT GAUGE ALL HAVE BUILDER METHODS/CLASSES in micrometer metrics, and ALL of the 4 Have resgistry methods to create themselves !!!
+
+DiskSpace and PingHealthIndicators are autoconfigured ALWAYS by default.
+
+The 3 micrometer-registry's: Prometheus, Graphite, and InfluxDB implementations , are standard impls to micrometer which is like interfaces.
